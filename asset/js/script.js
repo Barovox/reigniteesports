@@ -84,7 +84,7 @@ function addTeamMember() {
     const bio = document.getElementById('memberBio').value;
     const photoFile = document.getElementById('memberPhoto').files[0];
 
-    if (!name || !gameName || !role || !photoFile) {
+    if (!name || !gameName || !photoFile) {
         alert('Please fill in all required fields!');
         return;
     }
