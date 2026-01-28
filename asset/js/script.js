@@ -25,7 +25,7 @@ function displayTeamMembers() {
             <img src="${member.photo}" alt="${member.name}" class="member-image">
             <div class="member-info">
                 <div class="member-name">${member.name}</div>
-                <div class="member-gamename">${member.gameName}</div>
+                <div class="member-gamename">RG_${member.gameName}</div>
                 <div class="member-role">${member.role}</div>
                 <div class="member-bio">${member.bio}</div>
                 <button class="delete-member" onclick="deleteTeamMember(${index})">Delete</button>
