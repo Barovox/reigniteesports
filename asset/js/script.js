@@ -361,12 +361,7 @@ function setupHeader() {
 
   if (brand && brandLogo) {
     brand.addEventListener('click', () => {
-      brandLogo.classList.remove('is-spinning');
-      void brandLogo.offsetWidth;
-      brandLogo.classList.add('is-spinning');
-    });
-    brandLogo.addEventListener('animationend', () => {
-      brandLogo.classList.remove('is-spinning');
+      revealLogoFromCenter(brand, brandLogo);
     });
   }
 
@@ -382,6 +377,82 @@ function setupHeader() {
       navToggle.setAttribute('aria-expanded', String(isOpen));
     });
   }
+}
+
+let logoRevealFrame = 0;
+let logoRevealCanvas = null;
+let logoRevealImage = null;
+
+function revealLogoFromCenter(brand, image) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !image.complete || !image.naturalWidth) return;
+
+  if (logoRevealFrame) cancelAnimationFrame(logoRevealFrame);
+  logoRevealCanvas?.remove();
+  logoRevealImage?.classList.remove('is-pixelating');
+
+  const bounds = image.getBoundingClientRect();
+  const pixelRatio = window.devicePixelRatio || 1;
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  const columns = Math.max(1, Math.ceil(bounds.width / 6));
+  const rows = Math.max(1, Math.ceil(bounds.height / 6));
+  const pixelImage = document.createElement('canvas');
+  pixelImage.width = columns;
+  pixelImage.height = rows;
+  const pixelContext = pixelImage.getContext('2d');
+  if (!context || !pixelContext) return;
+
+  canvas.width = Math.round(bounds.width * pixelRatio);
+  canvas.height = Math.round(bounds.height * pixelRatio);
+  canvas.className = 'brand-logo-canvas';
+  canvas.setAttribute('aria-hidden', 'true');
+  pixelContext.imageSmoothingEnabled = true;
+  pixelContext.drawImage(image, 0, 0, columns, rows);
+
+  const cellWidth = canvas.width / columns;
+  const cellHeight = canvas.height / rows;
+  const centerX = (columns - 1) / 2;
+  const centerY = (rows - 1) / 2;
+  const cells = Array.from({ length: columns * rows }, (_, index) => {
+    const x = index % columns;
+    const y = Math.floor(index / columns);
+    return { x, y, distance: Math.hypot(x - centerX, y - centerY) };
+  }).sort((a, b) => a.distance - b.distance);
+
+  brand.append(canvas);
+  image.classList.add('is-pixelating');
+  logoRevealCanvas = canvas;
+  logoRevealImage = image;
+
+  const startedAt = performance.now();
+  const duration = 800;
+  let drawnCells = 0;
+  const drawFrame = (now) => {
+    if (canvas !== logoRevealCanvas) return;
+
+    const progress = Math.min((now - startedAt) / duration, 1);
+    const visibleCells = Math.ceil(progress * cells.length);
+    for (let index = drawnCells; index < visibleCells; index += 1) {
+      const { x, y } = cells[index];
+      const left = x * cellWidth;
+      const top = y * cellHeight;
+      context.drawImage(pixelImage, x, y, 1, 1, left, top, cellWidth + 0.5, cellHeight + 0.5);
+    }
+    drawnCells = visibleCells;
+
+    if (progress < 1) {
+      logoRevealFrame = requestAnimationFrame(drawFrame);
+      return;
+    }
+
+    image.classList.remove('is-pixelating');
+    canvas.remove();
+    logoRevealCanvas = null;
+    logoRevealImage = null;
+    logoRevealFrame = 0;
+  };
+
+  logoRevealFrame = requestAnimationFrame(drawFrame);
 }
 
 function bindNavLinks() {
