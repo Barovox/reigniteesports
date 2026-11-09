@@ -451,7 +451,10 @@ function renderCalendar() {
         <div class="event-item-header">
           <span class="event-badge ${escapeHtml(event.category.toLowerCase())}">${escapeHtml(event.category)}</span>
         </div>
-        <h4>${escapeHtml(event.title)}</h4>
+        <h4>
+          ${escapeHtml(event.title)}
+          ${(event.start_time || '').slice(0, 5) ? `<time class="event-item-time" datetime="${escapeHtml((event.start_time || '').slice(0, 5))}">${escapeHtml((event.start_time || '').slice(0, 5))}</time>` : ''}
+        </h4>
         <p>${escapeHtml(event.description)}</p>
         <p>${escapeHtml(formatEventDateRange(event))}</p>
         <p>${escapeHtml(event.location)}</p>

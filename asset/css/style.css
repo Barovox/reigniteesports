@@ -934,6 +934,10 @@ p {
   margin: 0 0 0.35rem;
 }
 
+.event-item-time {
+  display: none;
+}
+
 .event-item p {
   font-size: 0.82rem;
   color: var(--muted);
@@ -1825,6 +1829,15 @@ p {
     color: var(--primary);
     font-weight: 700;
     letter-spacing: 0.04em;
+  }
+
+  .event-item-time {
+    display: inline;
+    margin-left: 0.4rem;
+    color: var(--primary);
+    font-size: 0.82em;
+    font-weight: 700;
+    white-space: nowrap;
   }
 }
 
