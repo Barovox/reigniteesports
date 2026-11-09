@@ -1,4 +1,5 @@
 import { publicSupabase, supabase } from './supabase.js';
+import { saveEventRecord, validateEventInput } from './event-service.js';
 
 const translations = {
   'intro.skip': ['Skip Intro', 'Bỏ qua giới thiệu'],
@@ -784,23 +785,17 @@ function initEventForm() {
     const validationStatus = 'eventValidation';
     setAdminStatus('');
 
-    if (!title || !startDate || !startTime || !endDate || !endTime) {
-      setAdminStatus('Enter an event title, start date and time, and end date and time.', true, validationStatus);
-      return;
-    }
-
-    if (`${endDate}T${endTime}` <= `${startDate}T${startTime}`) {
-      setAdminStatus('End date and time must be later than the start date and time.', true, validationStatus);
-      return;
-    }
-
-    if (externalUrl && !safeExternalUrl(externalUrl)) {
-      setAdminStatus('Enter a valid external URL starting with http:// or https://.', true, validationStatus);
-      return;
-    }
-
-    if (!['STREAM', 'SCRIM', 'TOURNAMENT', 'ANNOUNCEMENT', 'COMMUNITY'].includes(category)) {
-      setAdminStatus('Select a valid event category.', true, validationStatus);
+    const validationError = validateEventInput({
+      title,
+      startDate,
+      startTime,
+      endDate,
+      endTime,
+      externalUrl,
+      category
+    });
+    if (validationError) {
+      setAdminStatus(validationError, true, validationStatus);
       return;
     }
 
@@ -822,11 +817,8 @@ function initEventForm() {
     saveButton.disabled = true;
     setAdminStatus(id ? 'Updating event…' : 'Creating event...');
 
-    let result;
     try {
-      result = id
-        ? await supabase.from('events').update(record).eq('id', id).select().single()
-        : await supabase.from('events').insert(record).select().single();
+      await saveEventRecord(supabase, record, id);
     } catch (saveError) {
       saveButton.disabled = false;
       setAdminStatus(`Unable to save event: ${saveError.message}`, true);
@@ -834,10 +826,6 @@ function initEventForm() {
     }
 
     saveButton.disabled = false;
-    if (result.error) {
-      setAdminStatus(`Unable to save event: ${result.error.message}`, true);
-      return;
-    }
 
     const refreshed = await loadEvents();
     if (refreshed) {

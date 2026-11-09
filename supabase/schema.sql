@@ -43,6 +43,27 @@ BEGIN
 END;
 $$;
 
+-- Allow multiple events to occupy overlapping schedule times.
+DO $$
+DECLARE
+  overlap_constraint record;
+BEGIN
+  FOR overlap_constraint IN
+    SELECT constraint_info.conname
+    FROM pg_constraint AS constraint_info
+    WHERE constraint_info.conrelid = 'schedule.events'::regclass
+      AND constraint_info.contype = 'x'
+      AND pg_get_constraintdef(constraint_info.oid) ~* 'start_(date|time)'
+      AND pg_get_constraintdef(constraint_info.oid) ~* 'end_(date|time)'
+  LOOP
+    EXECUTE format(
+      'ALTER TABLE schedule.events DROP CONSTRAINT %I',
+      overlap_constraint.conname
+    );
+  END LOOP;
+END;
+$$;
+
 CREATE TABLE IF NOT EXISTS public.event_admins (
   user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at timestamptz NOT NULL DEFAULT now()
