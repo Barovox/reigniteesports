@@ -902,8 +902,17 @@ p {
 }
 
 .event-badge.tournament {
-  background: rgba(57, 217, 138, 0.12);
-  color: #90f0bf;
+  background: rgba(255, 74, 90, 0.16);
+  color: #ff6875;
+}
+
+.event-item.is-tournament {
+  border-color: rgba(255, 74, 90, 0.38);
+  box-shadow: inset 3px 0 0 #ff4a5a;
+}
+
+.event-item.is-tournament h4 {
+  color: #ff6875;
 }
 
 .event-badge.announcement {

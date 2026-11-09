@@ -318,6 +318,10 @@ function sortEvents(events) {
   });
 }
 
+function prioritizeTournamentEvents(events) {
+  return [...events].sort((a, b) => Number(b.category === 'TOURNAMENT') - Number(a.category === 'TOURNAMENT'));
+}
+
 function formatDate(dateString, options = { month: 'short', day: 'numeric' }) {
   const date = new Date(`${dateString}T00:00:00`);
   return new Intl.DateTimeFormat('en-US', options).format(date);
@@ -424,7 +428,9 @@ function renderCalendar() {
   const selectedDateKey = toDateKey(appState.selectedDate);
   const selectedEvents = events.filter((event) => eventOccursOnDate(event, selectedDateKey));
 
-  const list = selectedEvents.length ? selectedEvents : upcoming.slice(0, 4);
+  const list = selectedEvents.length
+    ? prioritizeTournamentEvents(selectedEvents)
+    : prioritizeTournamentEvents(upcoming).slice(0, 4);
   if (!appState.eventsLoaded) {
     eventList.innerHTML = '<div class="empty-state loading-state" role="status" aria-live="polite">Loading events…</div>';
   } else if (appState.eventError) {
@@ -433,7 +439,7 @@ function renderCalendar() {
     eventList.innerHTML = '<div class="empty-state">No upcoming events. Sign in as an authorized admin to schedule one.</div>';
   } else {
     eventList.innerHTML = list.map((event) => `
-      <article class="event-item">
+      <article class="event-item ${event.category === 'TOURNAMENT' ? 'is-tournament' : ''}">
         <div class="event-item-header">
           <span class="event-badge ${escapeHtml(event.category.toLowerCase())}">${escapeHtml(event.category)}</span>
         </div>
