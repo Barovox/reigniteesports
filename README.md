@@ -17,7 +17,7 @@ To enable Supabase events in the deployed site, add repository variables named `
 ## Configure Supabase events and admin access
 
 1. In Supabase Dashboard → Project Settings → API → Exposed schemas, ensure `schedule` is listed.
-2. Open the Supabase SQL Editor for your project and run [`supabase/schema.sql`](./supabase/schema.sql). The script requires the existing `schedule.events` table and checks its columns/types before proceeding; it never creates, drops, or truncates that table or its records. It applies the supported categories, schema/table grants, and Row Level Security. It replaces existing policies on `schedule.events` and `public.event_admins` so no permissive policy can grant public writes.
+2. Open the Supabase SQL Editor for your project and run [`supabase/schema.sql`](./supabase/schema.sql). The script requires the existing `schedule.events` table and checks its columns/types before proceeding; it never creates, drops, or truncates that table or its records. It applies the supported categories (`STREAM`, `SCRIM`, `TOURNAMENT`, `ANNOUNCEMENT`, and `COMMUNITY`), schema/table grants, and Row Level Security. It replaces existing policies on `schedule.events` and `public.event_admins` so no permissive policy can grant public writes.
 3. In Supabase Dashboard → Authentication → Users, create the administrator login account.
 4. Copy that user's UUID and register it in the SQL Editor:
 

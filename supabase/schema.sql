@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS public.event_admins (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
--- Replace only category CHECK constraints so all four supported categories
+-- Replace only category CHECK constraints so all five supported categories
 -- can be stored, without touching existing event rows.
 DO $$
 DECLARE
@@ -71,7 +71,7 @@ $$;
 
 ALTER TABLE schedule.events
   ADD CONSTRAINT schedule_events_category_allowed
-  CHECK (category IN ('STREAM', 'TOURNAMENT', 'ANNOUNCEMENT', 'COMMUNITY'))
+  CHECK (category IN ('STREAM', 'SCRIM', 'TOURNAMENT', 'ANNOUNCEMENT', 'COMMUNITY'))
   NOT VALID;
 
 ALTER TABLE schedule.events

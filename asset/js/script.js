@@ -566,7 +566,7 @@ function initEventForm() {
       return;
     }
 
-    if (!['STREAM', 'TOURNAMENT', 'ANNOUNCEMENT', 'COMMUNITY'].includes(category)) {
+    if (!['STREAM', 'SCRIM', 'TOURNAMENT', 'ANNOUNCEMENT', 'COMMUNITY'].includes(category)) {
       setAdminStatus('Select a valid event category.', true, validationStatus);
       return;
     }

@@ -896,6 +896,11 @@ p {
   color: #7ad1ff;
 }
 
+.event-badge.scrim {
+  background: rgba(0, 230, 200, 0.14);
+  color: #70f3de;
+}
+
 .event-badge.tournament {
   background: rgba(57, 217, 138, 0.12);
   color: #90f0bf;
