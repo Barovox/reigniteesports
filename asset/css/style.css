@@ -1332,6 +1332,7 @@ p {
   isolation: isolate;
   perspective: 900px;
   transition: opacity 850ms ease, filter 850ms ease, transform 850ms ease;
+  animation: introFailsafe 850ms ease 5.6s forwards;
 }
 
 #introOverlay.hidden {
@@ -1624,10 +1625,19 @@ p {
 }
 
 #introOverlay.is-exiting {
+  animation: none;
   opacity: 0;
   filter: blur(10px);
   transform: scale(1.04);
   pointer-events: none;
+}
+
+@keyframes introFailsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
 }
 
 @keyframes logoReveal {

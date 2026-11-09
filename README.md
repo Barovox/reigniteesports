@@ -8,6 +8,12 @@
 
 The browser app uses `@supabase/supabase-js`. `@supabase/ssr` is intentionally not used because this project is a static HTML/JavaScript site, not a Next.js server-rendered app.
 
+## Deploy to GitHub Pages
+
+The site must be built with Vite before GitHub Pages serves it. The workflow at `.github/workflows/deploy-pages.yml` builds and deploys `dist` on pushes to `main`. In repository Settings → Pages, set the build and deployment source to **GitHub Actions**. The Vite base path is configured for this repository's project URL: `https://barovox.github.io/reigniteesports/`.
+
+To enable Supabase events in the deployed site, add repository variables named `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in Settings → Secrets and variables → Actions → Variables. The publishable key is intended for browser use; never configure a service-role or secret key there.
+
 ## Configure Supabase events and admin access
 
 1. In Supabase Dashboard → Project Settings → API → Exposed schemas, ensure `schedule` is listed.
