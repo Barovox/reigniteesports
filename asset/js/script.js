@@ -1,5 +1,200 @@
 import { publicSupabase, supabase } from './supabase.js';
 
+const translations = {
+  'intro.skip': ['Skip Intro', 'Bỏ qua giới thiệu'],
+  'intro.online': ['SYSTEM ONLINE', 'HỆ THỐNG ĐÃ SẴN SÀNG'],
+  'nav.home': ['Home', 'Trang chủ'],
+  'nav.homeAria': ['Reignite Esports Home', 'Trang chủ Reignite Esports'],
+  'nav.about': ['About', 'Giới thiệu'],
+  'nav.players': ['Players', 'Tuyển thủ'],
+  'nav.creators': ['Content Creators', 'Nhà sáng tạo nội dung'],
+  'nav.achievements': ['Achievements', 'Thành tích'],
+  'nav.schedule': ['Schedule', 'Lịch thi đấu'],
+  'nav.admin': ['Admin', 'Quản trị'],
+  'hero.description': ['A competitive esports organization driven by passion, ambition, and the pursuit of excellence.', 'Tổ chức esports chuyên nghiệp được dẫn dắt bởi đam mê, khát vọng và tinh thần chinh phục những đỉnh cao.'],
+  'hero.explore': ['Explore Our Team', 'Khám phá đội tuyển'],
+  'hero.viewAchievements': ['View Achievements', 'Xem thành tích'],
+  'hero.featured': ['FEATURED ACHIEVEMENT', 'THÀNH TÍCH NỔI BẬT'],
+  'hero.place': ['4TH PLACE', 'HẠNG 4'],
+  'about.eyebrow': ['ABOUT', 'VỀ CHÚNG TÔI'],
+  'about.intro1': ['Reignite Esports (RN) was founded in April 2026 with a clear ambition: to become one of the leading esports organizations in Southeast Asia by building a competitive ecosystem that connects talented players, passionate fans, and the next generation of esports enthusiasts.', 'Reignite Esports (RN) được thành lập vào tháng 4 năm 2026 với khát vọng trở thành một trong những tổ chức esports hàng đầu Đông Nam Á, xây dựng hệ sinh thái thi đấu kết nối tuyển thủ tài năng, người hâm mộ nhiệt thành và thế hệ đam mê esports tiếp theo.'],
+  'about.intro2': ['Our focus is on developing competitive talent, fostering a strong community, creating professional opportunities, and expanding into emerging esports titles with discipline and competitive excellence at the core.', 'Chúng tôi tập trung phát triển tài năng thi đấu, xây dựng cộng đồng vững mạnh, tạo cơ hội nghề nghiệp chuyên nghiệp và mở rộng sang các bộ môn esports tiềm năng, với kỷ luật và thành tích thi đấu làm nền tảng.'],
+  'about.founded': ['Founded', 'Thành lập'],
+  'about.primaryTitle': ['Primary Title', 'Bộ môn chính'],
+  'about.organization': ['Organization', 'Tổ chức'],
+  'about.vision': ['Vision', 'Tầm nhìn'],
+  'about.visionText': ['To become one of the leading esports organizations in PUBG Mobile, building a competitive ecosystem that connects talented players, passionate fans, and the next generation of esports enthusiasts.', 'Trở thành một trong những tổ chức esports hàng đầu PUBG Mobile, xây dựng hệ sinh thái thi đấu kết nối tuyển thủ tài năng, người hâm mộ nhiệt thành và thế hệ đam mê esports tiếp theo.'],
+  'about.mission': ['Mission', 'Sứ mệnh'],
+  'about.mission1': ['Develop competitive esports talent.', 'Phát triển tài năng thi đấu esports.'],
+  'about.mission2': ['Build a strong and passionate community.', 'Xây dựng cộng đồng vững mạnh và nhiệt huyết.'],
+  'about.mission3': ['Create professional opportunities for players and content creators.', 'Tạo cơ hội nghề nghiệp chuyên nghiệp cho tuyển thủ và nhà sáng tạo nội dung.'],
+  'about.mission4': ['Expand into other promising esports titles.', 'Mở rộng sang các bộ môn esports tiềm năng khác.'],
+  'about.mission5': ['Establish a recognizable esports brand in the regional market.', 'Xây dựng thương hiệu esports có dấu ấn tại thị trường khu vực.'],
+  'players.eyebrow': ['TEAM ROSTER', 'ĐỘI HÌNH'],
+  'players.title': ['Players', 'Tuyển thủ'],
+  'player.dob': ['DOB', 'Ngày sinh'],
+  'player.dateOfBirth': ['Date of Birth:', 'Ngày sinh:'],
+  'player.viewProfile': ['View Profile', 'Xem hồ sơ'],
+  'player.openTiktok': ['Open TikTok', 'Mở TikTok'],
+  'creators.eyebrow': ['CONTENT CREATOR', 'NHÀ SÁNG TẠO NỘI DUNG'],
+  'creators.title': ['Official Media', 'Truyền thông chính thức'],
+  'creators.role': ['Official Content Creator', 'Nhà sáng tạo nội dung chính thức'],
+  'creators.tiktok': ['TikTok Profile', 'Trang TikTok'],
+  'achievements.eyebrow': ['ACHIEVEMENTS', 'THÀNH TÍCH'],
+  'achievements.title': ['Milestones', 'Dấu ấn'],
+  'achievements.teamEyebrow': ['TEAM ACHIEVEMENT', 'THÀNH TÍCH ĐỘI TUYỂN'],
+  'achievements.placement': ['Final Placement', 'Thứ hạng chung cuộc'],
+  'achievements.team': ['Team Achievements', 'Thành tích đội tuyển'],
+  'achievements.individual': ['Individual Achievements', 'Thành tích cá nhân'],
+  'achievement.team1': ['4th Place – PUBG Mobile Pro League Vietnam Fall 2026', 'Hạng 4 – PUBG Mobile Pro League Việt Nam Mùa Thu 2026'],
+  'achievement.master': ['Recognized Esports Master (Kiện Tướng Thể thao Điện tử)', 'Được công nhận danh hiệu Kiện Tướng Thể thao Điện tử'],
+  'achievement.individual1': ['2nd Place – PUBG Mobile National Championship Vietnam 2024', 'Hạng 2 – Giải Vô địch Quốc gia PUBG Mobile Việt Nam 2024'],
+  'achievement.individual2': ['2nd Place – PUBG Mobile National Championship Vietnam Fall 2025', 'Hạng 2 – Giải Vô địch Quốc gia PUBG Mobile Việt Nam Mùa Thu 2025'],
+  'achievement.individual3': ['2nd Place – Vietnam National Esports Championship, Year-End Season 2025', 'Hạng 2 – Giải Vô địch Thể thao điện tử Quốc gia Việt Nam, Mùa cuối năm 2025'],
+  'achievement.individual4': ['3rd Place – 31st Southeast Asian Games Vietnam Qualifier', 'Hạng 3 – Vòng tuyển chọn Việt Nam tại Đại hội Thể thao Đông Nam Á lần thứ 31'],
+  'achievement.individual5': ['4th Place – PUBG Mobile Pro League Vietnam Spring 2022', 'Hạng 4 – PUBG Mobile Pro League Việt Nam Mùa Xuân 2022'],
+  'achievement.individual6': ['4th Place – PUBG Mobile Pro League Vietnam Spring 2023', 'Hạng 4 – PUBG Mobile Pro League Việt Nam Mùa Xuân 2023'],
+  'achievement.individual7': ['3rd Place – PUBG Mobile Premier Series 2023, Super Weekend 3', 'Hạng 3 – PUBG Mobile Premier Series 2023, Super Weekend 3'],
+  'schedule.eyebrow': ['SCHEDULE', 'LỊCH TRÌNH'],
+  'schedule.title': ['Event Calendar', 'Lịch sự kiện'],
+  'schedule.callout': ['Public visitors can browse upcoming events. Administrators can manage schedule entries securely.', 'Mọi người có thể xem các sự kiện sắp tới. Quản trị viên có thể quản lý lịch trình an toàn.'],
+  'schedule.openAdmin': ['Open Admin Dashboard', 'Mở trang quản trị'],
+  'calendar.month': ['Month', 'Tháng'],
+  'calendar.week': ['Week', 'Tuần'],
+  'calendar.day': ['Day', 'Ngày'],
+  'calendar.upcoming': ['Upcoming Events', 'Sự kiện sắp tới'],
+  'calendar.previous': ['Previous period', 'Khoảng thời gian trước'],
+  'calendar.next': ['Next period', 'Khoảng thời gian tiếp theo'],
+  'calendar.noUpcoming': ['No upcoming events. Sign in as an authorized admin to schedule one.', 'Chưa có sự kiện sắp tới. Đăng nhập bằng tài khoản quản trị được cấp quyền để thêm sự kiện.'],
+  'calendar.loading': ['Loading events…', 'Đang tải sự kiện…'],
+  'calendar.weekdays': [['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']],
+  'footer.description': ['Competitive esports organization built on passion, discipline, and ambition.', 'Tổ chức esports chuyên nghiệp được xây dựng trên đam mê, kỷ luật và khát vọng.'],
+  'footer.links': ['Quick Links', 'Liên kết nhanh'],
+  'footer.creator': ['Creator', 'Nhà sáng tạo'],
+  'footer.copyright': ['© 2026 Reignite Esports. All Rights Reserved.', '© 2026 Reignite Esports. Bảo lưu mọi quyền.'],
+  'modal.closeProfile': ['Close player profile', 'Đóng hồ sơ tuyển thủ'],
+  'modal.closeLogin': ['Close admin login', 'Đóng đăng nhập quản trị'],
+  'admin.access': ['Admin Access', 'Truy cập quản trị'],
+  'admin.email': ['Email', 'Email'],
+  'admin.password': ['Password', 'Mật khẩu'],
+  'admin.signIn': ['Sign In', 'Đăng nhập'],
+  'admin.dashboard': ['ADMIN DASHBOARD', 'TRANG QUẢN TRỊ'],
+  'admin.management': ['Event Management', 'Quản lý sự kiện'],
+  'admin.logout': ['Logout', 'Đăng xuất'],
+  'admin.totalUpcoming': ['Total Upcoming Events', 'Tổng sự kiện sắp tới'],
+  'admin.streams': ['Stream Events', 'Sự kiện phát trực tiếp'],
+  'admin.tournaments': ['Tournament Events', 'Giải đấu'],
+  'admin.createEvent': ['Create Event', 'Tạo sự kiện'],
+  'admin.editEvent': ['Edit Event', 'Chỉnh sửa sự kiện'],
+  'admin.category': ['Category', 'Danh mục'],
+  'admin.title': ['Title', 'Tên sự kiện'],
+  'admin.description': ['Description', 'Mô tả'],
+  'admin.startDate': ['Start Date', 'Ngày bắt đầu'],
+  'admin.endDate': ['End Date', 'Ngày kết thúc'],
+  'admin.startTime': ['Start Time', 'Giờ bắt đầu'],
+  'admin.endTime': ['End Time', 'Giờ kết thúc'],
+  'admin.location': ['Location / Platform', 'Địa điểm / Nền tảng'],
+  'admin.externalUrl': ['External URL', 'Liên kết bên ngoài'],
+  'admin.save': ['Save Event', 'Lưu sự kiện'],
+  'admin.reset': ['Reset', 'Làm mới'],
+  'admin.records': ['Event Records', 'Danh sách sự kiện'],
+  'admin.searchTitle': ['Search by title', 'Tìm theo tên sự kiện'],
+  'admin.searchPlaceholder': ['Search events...', 'Tìm sự kiện...'],
+  'admin.allCategories': ['All categories', 'Tất cả danh mục'],
+  'admin.sortDate': ['Sort by date', 'Sắp xếp theo ngày'],
+  'admin.earliest': ['Earliest first', 'Sớm nhất trước'],
+  'admin.latest': ['Latest first', 'Muộn nhất trước'],
+  'admin.noMatches': ['No events match these filters.', 'Không có sự kiện phù hợp với bộ lọc.'],
+  'admin.loading': ['Loading events…', 'Đang tải sự kiện…'],
+  'admin.tableCategory': ['Category', 'Danh mục'],
+  'admin.tableTitle': ['Title', 'Tên sự kiện'],
+  'admin.tableDescription': ['Description', 'Mô tả'],
+  'admin.tableStart': ['Start', 'Bắt đầu'],
+  'admin.tableEnd': ['End', 'Kết thúc'],
+  'admin.tableLocation': ['Location', 'Địa điểm'],
+  'admin.tableActions': ['Actions', 'Thao tác'],
+  'admin.edit': ['Edit', 'Sửa'],
+  'admin.delete': ['Delete', 'Xóa'],
+  'admin.deleteConfirm': ['Delete this event?', 'Bạn có chắc muốn xóa sự kiện này không?'],
+  'category.STREAM': ['STREAM', 'PHÁT TRỰC TIẾP'],
+  'category.SCRIM': ['SCRIM', 'ĐẤU TẬP'],
+  'category.TOURNAMENT': ['TOURNAMENT', 'GIẢI ĐẤU'],
+  'category.ANNOUNCEMENT': ['ANNOUNCEMENT', 'THÔNG BÁO'],
+  'category.COMMUNITY': ['COMMUNITY', 'CỘNG ĐỒNG']
+};
+
+const playerTranslations = {
+  tuan18: {
+    role: 'Đội trưởng chiến thuật (IGL)',
+    summary: 'Thủ lĩnh chiến thuật dẫn dắt đội tuyển bằng sự bình tĩnh và khả năng vận hành chính xác.'
+  },
+  nomk3: {
+    role: 'Hỗ trợ',
+    summary: 'Tuyển thủ hỗ trợ ổn định với khả năng chọn vị trí kỷ luật và đóng góp hiệu quả cho đội.'
+  },
+  boyti: {
+    role: 'Xạ thủ',
+    summary: 'Tuyển thủ mở giao tranh bùng nổ, tạo áp lực mạnh và duy trì nhịp độ quyết liệt.'
+  },
+  longh: {
+    role: 'Xạ thủ',
+    summary: 'Tuyển thủ tạo áp lực mở giao tranh và xử lý quyết đoán ở những thời điểm then chốt.'
+  }
+};
+
+const vietnameseMonths = {
+  January: '1', February: '2', March: '3', April: '4', May: '5', June: '6',
+  July: '7', August: '8', September: '9', October: '10', November: '11', December: '12'
+};
+
+let currentLanguage = localStorage.getItem('reignite-language') === 'vi' ? 'vi' : 'en';
+
+function t(key) {
+  const entry = translations[key];
+  if (!entry) return key;
+  return entry[currentLanguage === 'vi' ? 1 : 0];
+}
+
+function translateAchievement(achievement) {
+  const translation = Object.entries(translations).find(([key, value]) => key.startsWith('achievement.') && value[0] === achievement);
+  return translation ? t(translation[0]) : achievement;
+}
+
+function categoryLabel(category) {
+  return t(`category.${category}`) || category;
+}
+
+function formatDob(dob) {
+  if (currentLanguage !== 'vi') return dob;
+  const match = dob.match(/^([A-Za-z]+) (\d+)$/);
+  return match ? `${match[2]} tháng ${vietnameseMonths[match[1]]}` : dob;
+}
+
+function applyTranslations() {
+  document.documentElement.lang = currentLanguage;
+  document.querySelectorAll('[data-i18n]').forEach((element) => {
+    element.textContent = t(element.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach((element) => {
+    element.setAttribute('placeholder', t(element.dataset.i18nPlaceholder));
+  });
+  document.querySelectorAll('[data-i18n-aria-label]').forEach((element) => {
+    element.setAttribute('aria-label', t(element.dataset.i18nAriaLabel));
+  });
+  document.querySelectorAll('.form-status[data-original-message]').forEach((element) => {
+    element.textContent = localizeAdminStatus(element.dataset.originalMessage);
+  });
+  const languageToggle = document.getElementById('languageToggle');
+  if (languageToggle) {
+    languageToggle.textContent = currentLanguage === 'vi' ? 'English' : 'Tiếng Việt';
+    languageToggle.setAttribute('aria-label', currentLanguage === 'vi' ? 'Chuyển sang tiếng Anh' : 'Switch to Vietnamese');
+  }
+  const formTitle = document.getElementById('eventFormTitle');
+  if (formTitle && document.getElementById('eventId')?.value) {
+    formTitle.textContent = t('admin.editEvent');
+  }
+}
+
 const players = [
   {
     id: 'tuan18',
@@ -88,12 +283,14 @@ const appState = {
 };
 
 const EVENT_VIEW_MAP = {
-  month: 'Month',
-  week: 'Week',
-  day: 'Day'
+  month: 'calendar.month',
+  week: 'calendar.week',
+  day: 'calendar.day'
 };
 
 async function initApp() {
+  applyTranslations();
+  bindLanguageToggle();
   setupIntro();
   setupHeader();
   renderPlayers();
@@ -105,6 +302,21 @@ async function initApp() {
   initEventForm();
   await restoreAdminSession();
   await loadEvents();
+}
+
+function bindLanguageToggle() {
+  document.getElementById('languageToggle')?.addEventListener('click', () => {
+    currentLanguage = currentLanguage === 'en' ? 'vi' : 'en';
+    localStorage.setItem('reignite-language', currentLanguage);
+    applyTranslations();
+    renderPlayers();
+    renderCalendar();
+    renderAdminEvents();
+    const activePlayerId = document.getElementById('playerModalContent')?.dataset.playerId;
+    if (activePlayerId && document.getElementById('playerModal')?.getAttribute('aria-hidden') === 'false') {
+      openPlayerModal(activePlayerId);
+    }
+  });
 }
 
 function setupIntro() {
@@ -171,7 +383,9 @@ function renderPlayers() {
   const grid = document.getElementById('playersGrid');
   if (!grid) return;
 
-  grid.innerHTML = players.map((player) => `
+  grid.innerHTML = players.map((player) => {
+    const localized = currentLanguage === 'vi' ? playerTranslations[player.id] : null;
+    return `
     <article class="player-card" data-player-id="${player.id}">
       <div class="player-photo">
         <img class="player-avatar" src="${player.image}" alt="${player.name} player portrait" loading="lazy" decoding="async" />
@@ -179,19 +393,20 @@ function renderPlayers() {
       </div>
       <div class="player-card-content">
         <h3 class="player-name">${player.name}</h3>
-        <div class="player-role">${player.role}</div>
+        <div class="player-role">${localized?.role || player.role}</div>
         <div class="player-meta">
-          <span>DOB</span>
-          <strong>${player.dob}</strong>
+          <span>${t('player.dob')}</span>
+          <strong>${formatDob(player.dob)}</strong>
         </div>
-        <p class="player-summary">${player.summary}</p>
+        <p class="player-summary">${localized?.summary || player.summary}</p>
         <div class="player-actions">
           <a class="social-link" href="${player.tiktok}" target="_blank" rel="noreferrer">TikTok</a>
-          <button class="player-view-btn" type="button" data-player-id="${player.id}">View Profile</button>
+          <button class="player-view-btn" type="button" data-player-id="${player.id}">${t('player.viewProfile')}</button>
         </div>
       </div>
     </article>
-  `).join('');
+  `;
+  }).join('');
 
   grid.querySelectorAll('.player-view-btn').forEach((button) => {
     button.addEventListener('click', () => openPlayerModal(button.dataset.playerId));
@@ -211,17 +426,18 @@ function openPlayerModal(playerId) {
       </div>
       <div class="player-modal-content">
         <h3>${player.name}</h3>
-        <div class="player-modal-role">${player.role}</div>
+        <div class="player-modal-role">${currentLanguage === 'vi' ? playerTranslations[player.id].role : player.role}</div>
         <div class="player-meta-block">
-          <div><strong>Date of Birth:</strong> ${player.dob}</div>
+          <div><strong>${t('player.dateOfBirth')}</strong> ${formatDob(player.dob)}</div>
         </div>
-        <a class="social-link" href="${player.tiktok}" target="_blank" rel="noreferrer">Open TikTok</a>
+        <a class="social-link" href="${player.tiktok}" target="_blank" rel="noreferrer">${t('player.openTiktok')}</a>
         <ul>
-          ${player.achievements.map((achievement) => `<li>${achievement}</li>`).join('')}
+          ${player.achievements.map((achievement) => `<li>${escapeHtml(translateAchievement(achievement))}</li>`).join('')}
         </ul>
       </div>
     </div>
   `;
+  content.dataset.playerId = player.id;
 
   modal.setAttribute('aria-hidden', 'false');
 }
@@ -324,7 +540,7 @@ function prioritizeTournamentEvents(events) {
 
 function formatDate(dateString, options = { month: 'short', day: 'numeric' }) {
   const date = new Date(`${dateString}T00:00:00`);
-  return new Intl.DateTimeFormat('en-US', options).format(date);
+  return new Intl.DateTimeFormat(currentLanguage === 'vi' ? 'vi-VN' : 'en-US', options).format(date);
 }
 
 function formatEventDateRange(event) {
@@ -374,7 +590,7 @@ function renderCalendar() {
 
   if (!calendarGrid || !eventList || !label) return;
 
-  label.textContent = `${EVENT_VIEW_MAP[appState.activeView]} • ${new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(appState.currentMonth)}`;
+  label.textContent = `${t(EVENT_VIEW_MAP[appState.activeView])} • ${new Intl.DateTimeFormat(currentLanguage === 'vi' ? 'vi-VN' : 'en-US', { month: 'long', year: 'numeric' }).format(appState.currentMonth)}`;
 
   const events = sortEvents(getEvents());
   const upcoming = events.filter(isUpcoming);
@@ -386,7 +602,7 @@ function renderCalendar() {
 
     const weekHeader = `
       <div class="calendar-weekdays">
-        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+        ${t('calendar.weekdays').map((day) => `<span>${day}</span>`).join('')}
       </div>
     `;
 
@@ -404,7 +620,7 @@ function renderCalendar() {
       const labels = dayEvents.slice(0, 2).map(renderCalendarEventLabel).join('');
 
       cells.push(`
-        <button type="button" class="${classes.join(' ')}" data-date="${dateKey}" aria-label="Select ${dateKey}">
+        <button type="button" class="${classes.join(' ')}" data-date="${dateKey}" aria-label="${currentLanguage === 'vi' ? 'Chọn ngày' : 'Select'} ${dateKey}">
           <span class="day-number">${date.getDate()}</span>
           ${dayEvents.length ? '<span class="day-event-dot"></span>' : ''}
           ${labels}
@@ -422,7 +638,7 @@ function renderCalendar() {
       if (toDateKey(appState.selectedDate) === dateKey) classes.push('selected');
 
       return `
-        <button type="button" class="${classes.join(' ')}" data-date="${dateKey}" aria-label="Select ${dateKey}">
+        <button type="button" class="${classes.join(' ')}" data-date="${dateKey}" aria-label="${currentLanguage === 'vi' ? 'Chọn ngày' : 'Select'} ${dateKey}">
           <span class="day-number">${date.getDate()}</span>
           ${dayEvents.length ? '<span class="day-event-dot"></span>' : ''}
           ${dayEvents.slice(0, 2).map(renderCalendarEventLabel).join('')}
@@ -440,16 +656,16 @@ function renderCalendar() {
     ? prioritizeTournamentEvents(selectedEvents)
     : prioritizeTournamentEvents(upcoming).slice(0, 4);
   if (!appState.eventsLoaded) {
-    eventList.innerHTML = '<div class="empty-state loading-state" role="status" aria-live="polite">Loading events…</div>';
+    eventList.innerHTML = `<div class="empty-state loading-state" role="status" aria-live="polite">${t('calendar.loading')}</div>`;
   } else if (appState.eventError) {
-    eventList.innerHTML = `<div class="empty-state error-state" role="alert">${escapeHtml(appState.eventError)}</div>`;
+    eventList.innerHTML = `<div class="empty-state error-state" role="alert">${escapeHtml(localizeAdminStatus(appState.eventError))}</div>`;
   } else if (!list.length) {
-    eventList.innerHTML = '<div class="empty-state">No upcoming events. Sign in as an authorized admin to schedule one.</div>';
+    eventList.innerHTML = `<div class="empty-state">${t('calendar.noUpcoming')}</div>`;
   } else {
     eventList.innerHTML = list.map((event) => `
       <article class="event-item ${event.category === 'TOURNAMENT' ? 'is-tournament' : ''}">
         <div class="event-item-header">
-          <span class="event-badge ${escapeHtml(event.category.toLowerCase())}">${escapeHtml(event.category)}</span>
+          <span class="event-badge ${escapeHtml(event.category.toLowerCase())}">${escapeHtml(categoryLabel(event.category))}</span>
         </div>
         <h4>
           ${escapeHtml(event.title)}
@@ -652,7 +868,7 @@ function resetEventForm() {
   if (!form) return;
   form.reset();
   document.getElementById('eventId').value = '';
-  document.getElementById('eventFormTitle').textContent = 'Create Event';
+  document.getElementById('eventFormTitle').textContent = t('admin.createEvent');
   document.getElementById('eventCategory').value = 'STREAM';
   setAdminStatus('', false, 'eventValidation');
 }
@@ -668,17 +884,17 @@ function renderAdminEvents() {
   if (dateSort === 'desc') events.reverse();
 
   if (!appState.eventsLoaded && !appState.eventError) {
-    tableWrap.innerHTML = '<div class="empty-state loading-state" role="status" aria-live="polite">Loading events…</div>';
+    tableWrap.innerHTML = `<div class="empty-state loading-state" role="status" aria-live="polite">${t('admin.loading')}</div>`;
     return;
   }
 
   if (appState.eventError) {
-    tableWrap.innerHTML = `<div class="empty-state error-state" role="alert">${escapeHtml(appState.eventError)}</div>`;
+    tableWrap.innerHTML = `<div class="empty-state error-state" role="alert">${escapeHtml(localizeAdminStatus(appState.eventError))}</div>`;
     return;
   }
 
   if (!events.length) {
-    tableWrap.innerHTML = '<div class="empty-state">No events match these filters.</div>';
+    tableWrap.innerHTML = `<div class="empty-state">${t('admin.noMatches')}</div>`;
     return;
   }
 
@@ -686,27 +902,27 @@ function renderAdminEvents() {
     <table>
       <thead>
         <tr>
-          <th>Category</th>
-          <th>Title</th>
-          <th>Description</th>
-          <th>Start</th>
-          <th>End</th>
-          <th>Location</th>
-          <th>Actions</th>
+          <th>${t('admin.tableCategory')}</th>
+          <th>${t('admin.tableTitle')}</th>
+          <th>${t('admin.tableDescription')}</th>
+          <th>${t('admin.tableStart')}</th>
+          <th>${t('admin.tableEnd')}</th>
+          <th>${t('admin.tableLocation')}</th>
+          <th>${t('admin.tableActions')}</th>
         </tr>
       </thead>
       <tbody>
         ${events.map((event) => `
           <tr>
-            <td>${escapeHtml(event.category)}</td>
+            <td>${escapeHtml(categoryLabel(event.category))}</td>
             <td>${escapeHtml(event.title)}</td>
             <td class="admin-event-description">${escapeHtml(event.description || '—')}</td>
             <td>${escapeHtml(formatDate(event.start_date, { year: 'numeric', month: 'short', day: 'numeric' }))} ${escapeHtml((event.start_time || '').slice(0, 5))}</td>
             <td>${escapeHtml(formatDate(event.end_date, { year: 'numeric', month: 'short', day: 'numeric' }))} ${escapeHtml((event.end_time || '').slice(0, 5))}</td>
             <td>${escapeHtml(event.location)}</td>
             <td class="table-actions">
-              <button class="small-btn" type="button" data-edit-event="${escapeHtml(event.id)}">Edit</button>
-              <button class="small-btn danger" type="button" data-delete-event="${escapeHtml(event.id)}">Delete</button>
+              <button class="small-btn" type="button" data-edit-event="${escapeHtml(event.id)}">${t('admin.edit')}</button>
+              <button class="small-btn danger" type="button" data-delete-event="${escapeHtml(event.id)}">${t('admin.delete')}</button>
             </td>
           </tr>
         `).join('')}
@@ -731,7 +947,7 @@ function loadEventForEdit(id) {
   if (!event) return;
 
   document.getElementById('eventId').value = event.id;
-  document.getElementById('eventFormTitle').textContent = 'Edit Event';
+  document.getElementById('eventFormTitle').textContent = t('admin.editEvent');
   document.getElementById('eventCategory').value = event.category;
   document.getElementById('eventTitle').value = event.title;
   document.getElementById('eventDescription').value = event.description || '';
@@ -746,7 +962,7 @@ function loadEventForEdit(id) {
 }
 
 async function deleteEvent(id) {
-  if (!window.confirm('Delete this event?')) return;
+  if (!window.confirm(t('admin.deleteConfirm'))) return;
 
   const deleteButton = document.querySelector(`[data-delete-event="${CSS.escape(id)}"]`);
   if (deleteButton?.disabled) return;
@@ -778,9 +994,44 @@ async function deleteEvent(id) {
 function setAdminStatus(message, isError = false, targetId = 'adminStatus') {
   const status = document.getElementById(targetId);
   if (!status) return;
-  status.textContent = message;
+  status.dataset.originalMessage = message;
+  status.textContent = localizeAdminStatus(message);
   status.classList.toggle('error-state', isError);
   status.classList.toggle('success-state', Boolean(message) && !isError);
+}
+
+function localizeAdminStatus(message) {
+  if (currentLanguage !== 'vi' || !message) return message;
+  const exactMessages = {
+    'Sign in with an authorized admin account to manage events.': 'Vui lòng đăng nhập bằng tài khoản quản trị được cấp quyền để quản lý sự kiện.',
+    'Enter an event title, start date and time, and end date and time.': 'Vui lòng nhập tên sự kiện, ngày và giờ bắt đầu, ngày và giờ kết thúc.',
+    'End date and time must be later than the start date and time.': 'Ngày và giờ kết thúc phải sau ngày và giờ bắt đầu.',
+    'Enter a valid external URL starting with http:// or https://.': 'Vui lòng nhập URL hợp lệ bắt đầu bằng http:// hoặc https://.',
+    'Select a valid event category.': 'Vui lòng chọn danh mục sự kiện hợp lệ.',
+    'Creating event...': 'Đang tạo sự kiện...',
+    'Updating event…': 'Đang cập nhật sự kiện…',
+    'Event updated successfully.': 'Cập nhật sự kiện thành công.',
+    'Event created successfully.': 'Tạo sự kiện thành công.',
+    'Event deleted.': 'Đã xóa sự kiện.',
+    'Signing in…': 'Đang đăng nhập…',
+    'Signed in. Event management is ready.': 'Đăng nhập thành công. Có thể quản lý sự kiện.',
+    'Supabase is not configured. Add the required VITE_SUPABASE_* values.': 'Supabase chưa được cấu hình. Hãy thêm các giá trị VITE_SUPABASE_* cần thiết.',
+    'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in .env.local.': 'Supabase chưa được cấu hình. Hãy khai báo VITE_SUPABASE_URL và VITE_SUPABASE_PUBLISHABLE_KEY trong .env.local.'
+  };
+  if (exactMessages[message]) return exactMessages[message];
+  const prefixes = [
+    ['Unable to save event: ', 'Không thể lưu sự kiện: '],
+    ['Unable to delete event: ', 'Không thể xóa sự kiện: '],
+    ['Unable to sign in: ', 'Không thể đăng nhập: '],
+    ['Unable to sign out: ', 'Không thể đăng xuất: '],
+    ['Unable to restore admin session: ', 'Không thể khôi phục phiên quản trị: '],
+    ['Unable to verify admin access: ', 'Không thể xác minh quyền quản trị: '],
+    ['Unable to load events: ', 'Không thể tải sự kiện: '],
+    ['Event was saved, but the list could not be refreshed: ', 'Đã lưu sự kiện nhưng không thể tải lại danh sách: '],
+    ['Event was deleted, but the list could not be refreshed: ', 'Đã xóa sự kiện nhưng không thể tải lại danh sách: ']
+  ];
+  const prefix = prefixes.find(([english]) => message.startsWith(english));
+  return prefix ? `${prefix[1]}${message.slice(prefix[0].length)}` : message;
 }
 
 async function checkEventAdmin(userId) {

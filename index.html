@@ -42,30 +42,31 @@
       </div>
       <div class="intro-heading">
         <span class="intro-subtitle">REIGNITE ESPORTS</span>
-        <span class="intro-status">SYSTEM ONLINE <i></i> BUILT TO REIGN</span>
+        <span class="intro-status"><span data-i18n="intro.online">SYSTEM ONLINE</span> <i></i> BUILT TO REIGN</span>
       </div>
       <div class="intro-progress" aria-hidden="true"><span></span></div>
-      <button id="skipIntroBtn" class="skip-btn" type="button">Skip Intro</button>
+      <button id="skipIntroBtn" class="skip-btn" type="button" data-i18n="intro.skip">Skip Intro</button>
     </div>
 
     <header class="site-header" id="top">
       <div class="container nav-shell">
-        <a href="#home" class="brand" aria-label="Reignite Esports Home">
+        <a href="#home" class="brand" aria-label="Reignite Esports Home" data-i18n-aria-label="nav.homeAria">
           <img src="asset/image/officiallogo.png" alt="RN official logo" class="brand-logo" />
         </a>
 
+        <button id="languageToggle" class="language-toggle" type="button" aria-label="Switch to Vietnamese">Tiếng Việt</button>
         <button class="nav-toggle" type="button" aria-label="Toggle menu" aria-expanded="false">
           <span></span><span></span><span></span>
         </button>
 
         <nav class="main-nav" aria-label="Main navigation">
-          <a href="#home">Home</a>
-          <a href="#about">About</a>
-          <a href="#players">Players</a>
-          <a href="#creators">Content Creators</a>
-          <a href="#achievements">Achievements</a>
-          <a href="#schedule">Schedule</a>
-          <button id="adminOpenBtn" class="nav-admin-btn" type="button">Admin</button>
+          <a href="#home" data-i18n="nav.home">Home</a>
+          <a href="#about" data-i18n="nav.about">About</a>
+          <a href="#players" data-i18n="nav.players">Players</a>
+          <a href="#creators" data-i18n="nav.creators">Content Creators</a>
+          <a href="#achievements" data-i18n="nav.achievements">Achievements</a>
+          <a href="#schedule" data-i18n="nav.schedule">Schedule</a>
+          <button id="adminOpenBtn" class="nav-admin-btn" type="button" data-i18n="nav.admin">Admin</button>
         </nav>
       </div>
     </header>
@@ -81,18 +82,18 @@
             </div>
             <h1>REIGNITE ESPORTS</h1>
             <p class="hero-tagline">BUILT TO REIGN</p>
-            <p class="hero-description">
+            <p class="hero-description" data-i18n="hero.description">
               A competitive esports organization driven by passion, ambition, and the pursuit of excellence.
             </p>
             <div class="hero-actions">
-              <a href="#players" class="btn btn-primary">Explore Our Team</a>
-              <a href="#achievements" class="btn btn-secondary">View Achievements</a>
+              <a href="#players" class="btn btn-primary" data-i18n="hero.explore">Explore Our Team</a>
+              <a href="#achievements" class="btn btn-secondary" data-i18n="hero.viewAchievements">View Achievements</a>
             </div>
           </div>
 
           <aside class="hero-feature" aria-label="Featured achievement">
-            <div class="feature-kicker">FEATURED ACHIEVEMENT</div>
-            <div class="feature-place">4TH PLACE</div>
+            <div class="feature-kicker" data-i18n="hero.featured">FEATURED ACHIEVEMENT</div>
+            <div class="feature-place" data-i18n="hero.place">4TH PLACE</div>
             <div class="feature-name">PUBG MOBILE PRO LEAGUE</div>
             <div class="feature-season">VIETNAM FALL 2026</div>
           </aside>
@@ -102,18 +103,18 @@
       <section id="about" class="section-shell about-shell">
         <div class="container">
           <div class="section-heading narrow">
-            <p class="eyebrow">ABOUT</p>
-            <h2>Reignite Esports</h2>
+            <p class="eyebrow" data-i18n="about.eyebrow">ABOUT</p>
+            <h2>REIGNITE ESPORTS</h2>
           </div>
 
           <div class="about-grid">
             <div class="about-intro card-panel">
-              <p>
+              <p data-i18n="about.intro1">
                 Reignite Esports (RN) was founded in April 2026 with a clear ambition: to become one of the
                 leading esports organizations in Southeast Asia by building a competitive ecosystem that
                 connects talented players, passionate fans, and the next generation of esports enthusiasts.
               </p>
-              <p>
+              <p data-i18n="about.intro2">
                 Our focus is on developing competitive talent, fostering a strong community, creating
                 professional opportunities, and expanding into emerging esports titles with discipline and
                 competitive excellence at the core.
@@ -122,15 +123,15 @@
 
             <div class="about-stats card-panel">
               <div class="stat-item">
-                <span class="stat-label">Founded</span>
+                <span class="stat-label" data-i18n="about.founded">Founded</span>
                 <strong>April 2026</strong>
               </div>
               <div class="stat-item">
-                <span class="stat-label">Primary Title</span>
+                <span class="stat-label" data-i18n="about.primaryTitle">Primary Title</span>
                 <strong>PUBG Mobile</strong>
               </div>
               <div class="stat-item">
-                <span class="stat-label">Organization</span>
+                <span class="stat-label" data-i18n="about.organization">Organization</span>
                 <strong>RN</strong>
               </div>
             </div>
@@ -138,21 +139,21 @@
 
           <div class="mission-grid">
             <div class="mission-item card-panel">
-              <h3>Vision</h3>
-              <p>
+              <h3 data-i18n="about.vision">Vision</h3>
+              <p data-i18n="about.visionText">
                 To become one of the leading esports organizations in Southeast Asia, building a competitive
                 ecosystem that connects talented players, passionate fans, and the next generation of esports
                 enthusiasts.
               </p>
             </div>
             <div class="mission-item card-panel">
-              <h3>Mission</h3>
+              <h3 data-i18n="about.mission">Mission</h3>
               <ul>
-                <li>Develop competitive esports talent.</li>
-                <li>Build a strong and passionate community.</li>
-                <li>Create professional opportunities for players and content creators.</li>
-                <li>Expand into other promising esports titles.</li>
-                <li>Establish a recognizable esports brand in the regional market.</li>
+                <li data-i18n="about.mission1">Develop competitive esports talent.</li>
+                <li data-i18n="about.mission2">Build a strong and passionate community.</li>
+                <li data-i18n="about.mission3">Create professional opportunities for players and content creators.</li>
+                <li data-i18n="about.mission4">Expand into other promising esports titles.</li>
+                <li data-i18n="about.mission5">Establish a recognizable esports brand in the regional market.</li>
               </ul>
             </div>
           </div>
@@ -162,8 +163,8 @@
       <section id="players" class="section-shell players-shell">
         <div class="container">
           <div class="section-heading">
-            <p class="eyebrow">TEAM ROSTER</p>
-            <h2>Players</h2>
+            <p class="eyebrow" data-i18n="players.eyebrow">TEAM ROSTER</p>
+            <h2 data-i18n="players.title">Players</h2>
           </div>
           <div id="playersGrid" class="players-grid" aria-live="polite"></div>
         </div>
@@ -172,15 +173,15 @@
       <section id="creators" class="section-shell creators-shell">
         <div class="container">
           <div class="section-heading narrow">
-            <p class="eyebrow">CONTENT CREATOR</p>
-            <h2>Official Media</h2>
+            <p class="eyebrow" data-i18n="creators.eyebrow">CONTENT CREATOR</p>
+            <h2 data-i18n="creators.title">Official Media</h2>
           </div>
           <article class="creator-card card-panel">
             <div class="creator-portrait">
               <div class="portrait-placeholder">VIETDUBAII</div>
             </div>
             <div class="creator-content">
-              <p class="eyebrow">Official Content Creator</p>
+              <p class="eyebrow" data-i18n="creators.role">Official Content Creator</p>
               <h3>VIETDUBAII</h3>
               <a
                 class="social-link"
@@ -188,7 +189,7 @@
                 target="_blank"
                 rel="noreferrer"
               >
-                TikTok Profile
+                <span data-i18n="creators.tiktok">TikTok Profile</span>
               </a>
             </div>
           </article>
@@ -198,40 +199,40 @@
       <section id="achievements" class="section-shell achievements-shell">
         <div class="container">
           <div class="section-heading">
-            <p class="eyebrow">ACHIEVEMENTS</p>
-            <h2>Milestones</h2>
+            <p class="eyebrow" data-i18n="achievements.eyebrow">ACHIEVEMENTS</p>
+            <h2 data-i18n="achievements.title">Milestones</h2>
           </div>
 
           <div class="featured-achievement card-panel">
             <div class="featured-achievement-copy">
-              <p class="eyebrow">TEAM ACHIEVEMENT</p>
+              <p class="eyebrow" data-i18n="achievements.teamEyebrow">TEAM ACHIEVEMENT</p>
               <h3>PUBG MOBILE PRO LEAGUE – VIETNAM FALL 2026</h3>
               <div class="placement-row">
                 <span class="placement-number">#4</span>
-                <span class="placement-detail">Final Placement</span>
+                <span class="placement-detail" data-i18n="achievements.placement">Final Placement</span>
               </div>
             </div>
           </div>
 
           <div class="achievement-columns">
             <div class="achievement-column card-panel">
-              <h3>Team Achievements</h3>
+              <h3 data-i18n="achievements.team">Team Achievements</h3>
               <ul>
-                <li>4th Place – PUBG Mobile Pro League Vietnam Fall 2026</li>
+                <li data-i18n="achievement.team1">4th Place – PUBG Mobile Pro League Vietnam Fall 2026</li>
               </ul>
             </div>
 
             <div class="achievement-column card-panel">
-              <h3>Individual Achievements</h3>
+              <h3 data-i18n="achievements.individual">Individual Achievements</h3>
               <ul>
-                <li>Recognized Esports Master (Kiện Tướng Thể thao Điện tử)</li>
-                <li>2nd Place – PUBG Mobile National Championship Vietnam 2024</li>
-                <li>2nd Place – PUBG Mobile National Championship Vietnam Fall 2025</li>
-                <li>2nd Place – Vietnam National Esports Championship, Year-End Season 2025</li>
-                <li>3rd Place – 31st Southeast Asian Games Vietnam Qualifier</li>
-                <li>4th Place – PUBG Mobile Pro League Vietnam Spring 2022</li>
-                <li>4th Place – PUBG Mobile Pro League Vietnam Spring 2023</li>
-                <li>3rd Place – PUBG Mobile Premier Series 2023, Super Weekend 3</li>
+                <li data-i18n="achievement.master">Recognized Esports Master (Kiện Tướng Thể thao Điện tử)</li>
+                <li data-i18n="achievement.individual1">2nd Place – PUBG Mobile National Championship Vietnam 2024</li>
+                <li data-i18n="achievement.individual2">2nd Place – PUBG Mobile National Championship Vietnam Fall 2025</li>
+                <li data-i18n="achievement.individual3">2nd Place – Vietnam National Esports Championship, Year-End Season 2025</li>
+                <li data-i18n="achievement.individual4">3rd Place – 31st Southeast Asian Games Vietnam Qualifier</li>
+                <li data-i18n="achievement.individual5">4th Place – PUBG Mobile Pro League Vietnam Spring 2022</li>
+                <li data-i18n="achievement.individual6">4th Place – PUBG Mobile Pro League Vietnam Spring 2023</li>
+                <li data-i18n="achievement.individual7">3rd Place – PUBG Mobile Premier Series 2023, Super Weekend 3</li>
               </ul>
             </div>
           </div>
@@ -241,36 +242,36 @@
       <section id="schedule" class="section-shell schedule-shell">
         <div class="container">
           <div class="section-heading">
-            <p class="eyebrow">SCHEDULE</p>
-            <h2>Event Calendar</h2>
+            <p class="eyebrow" data-i18n="schedule.eyebrow">SCHEDULE</p>
+            <h2 data-i18n="schedule.title">Event Calendar</h2>
           </div>
 
           <div class="calendar-shell card-panel">
             <div class="calendar-toolbar">
               <div class="view-switch" role="tablist" aria-label="Calendar views">
-                <button class="view-btn active" data-view="month" type="button">Month</button>
-                <button class="view-btn" data-view="week" type="button">Week</button>
-                <button class="view-btn" data-view="day" type="button">Day</button>
+                <button class="view-btn active" data-view="month" type="button" data-i18n="calendar.month">Month</button>
+                <button class="view-btn" data-view="week" type="button" data-i18n="calendar.week">Week</button>
+                <button class="view-btn" data-view="day" type="button" data-i18n="calendar.day">Day</button>
               </div>
               <div class="calendar-nav">
-                <button id="prevPeriodBtn" type="button" aria-label="Previous period">&#8592;</button>
+                <button id="prevPeriodBtn" type="button" aria-label="Previous period" data-i18n-aria-label="calendar.previous">&#8592;</button>
                 <div id="calendarLabel" class="calendar-label">Month</div>
-                <button id="nextPeriodBtn" type="button" aria-label="Next period">&#8594;</button>
+                <button id="nextPeriodBtn" type="button" aria-label="Next period" data-i18n-aria-label="calendar.next">&#8594;</button>
               </div>
             </div>
 
             <div class="calendar-layout">
               <div id="calendarGrid" class="calendar-grid" aria-live="polite"></div>
               <aside class="event-panel">
-                <h3>Upcoming Events</h3>
+                <h3 data-i18n="calendar.upcoming">Upcoming Events</h3>
                 <div id="eventList" class="event-list"></div>
               </aside>
             </div>
           </div>
 
           <div class="admin-callout">
-            <p>Public visitors can browse upcoming events. Administrators can manage schedule entries securely.</p>
-            <button id="openAdminFromSchedule" class="btn btn-primary" type="button">Open Admin Dashboard</button>
+            <p data-i18n="schedule.callout">Public visitors can browse upcoming events. Administrators can manage schedule entries securely.</p>
+            <button id="openAdminFromSchedule" class="btn btn-primary" type="button" data-i18n="schedule.openAdmin">Open Admin Dashboard</button>
           </div>
         </div>
       </section>
@@ -281,22 +282,22 @@
         <div>
           <img src="asset/image/officiallogo.png" alt="Reignite Esports logo" class="footer-logo" />
           <h3>REIGNITE ESPORTS</h3>
-          <p>Competitive esports organization built on passion, discipline, and ambition.</p>
+          <p data-i18n="footer.description">Competitive esports organization built on passion, discipline, and ambition.</p>
         </div>
 
         <div>
-          <h4>Quick Links</h4>
+          <h4 data-i18n="footer.links">Quick Links</h4>
           <ul>
-            <li><a href="#home">Home</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#players">Players</a></li>
-            <li><a href="#achievements">Achievements</a></li>
-            <li><a href="#schedule">Schedule</a></li>
+            <li><a href="#home" data-i18n="nav.home">Home</a></li>
+            <li><a href="#about" data-i18n="nav.about">About</a></li>
+            <li><a href="#players" data-i18n="nav.players">Players</a></li>
+            <li><a href="#achievements" data-i18n="nav.achievements">Achievements</a></li>
+            <li><a href="#schedule" data-i18n="nav.schedule">Schedule</a></li>
           </ul>
         </div>
 
         <div>
-          <h4>Players</h4>
+          <h4 data-i18n="players.title">Players</h4>
           <ul>
             <li><a href="https://www.tiktok.com/@tuanm1369?lang=en" target="_blank" rel="noreferrer">TUAN18</a></li>
             <li><a href="https://www.tiktok.com/@nomkarba?lang=en" target="_blank" rel="noreferrer">NOMK3</a></li>
@@ -306,38 +307,38 @@
         </div>
 
         <div>
-          <h4>Creator</h4>
+          <h4 data-i18n="footer.creator">Creator</h4>
           <ul>
             <li><a href="https://www.tiktok.com/@vietdubai.casterpubgmb?lang=en" target="_blank" rel="noreferrer">VIETDUBAII</a></li>
           </ul>
         </div>
       </div>
       <div class="footer-bottom">
-        <p>© 2026 Reignite Esports. All Rights Reserved.</p>
+        <p data-i18n="footer.copyright">© 2026 Reignite Esports. All Rights Reserved.</p>
       </div>
     </footer>
 
     <div id="playerModal" class="modal" aria-hidden="true">
       <div class="modal-panel player-modal-panel">
-        <button class="modal-close" type="button" aria-label="Close player profile">&times;</button>
+        <button class="modal-close" type="button" aria-label="Close player profile" data-i18n-aria-label="modal.closeProfile">&times;</button>
         <div id="playerModalContent"></div>
       </div>
     </div>
 
     <div id="loginModal" class="modal" aria-hidden="true">
       <div class="modal-panel login-panel">
-        <button class="modal-close" type="button" aria-label="Close admin login">&times;</button>
-        <h3>Admin Access</h3>
+        <button class="modal-close" type="button" aria-label="Close admin login" data-i18n-aria-label="modal.closeLogin">&times;</button>
+        <h3 data-i18n="admin.access">Admin Access</h3>
         <form id="loginForm" class="login-form">
           <label>
-            Email
+            <span data-i18n="admin.email">Email</span>
             <input type="email" id="adminEmail" autocomplete="username" required />
           </label>
           <label>
-            Password
+            <span data-i18n="admin.password">Password</span>
             <input type="password" id="adminPassword" autocomplete="current-password" required />
           </label>
-          <button type="submit" class="btn btn-primary">Sign In</button>
+          <button type="submit" class="btn btn-primary" data-i18n="admin.signIn">Sign In</button>
           <p id="loginStatus" class="form-status" role="status" aria-live="polite"></p>
         </form>
       </div>
@@ -347,23 +348,23 @@
       <div class="container admin-inner">
         <div class="admin-header">
           <div>
-            <p class="eyebrow">ADMIN DASHBOARD</p>
-            <h2>Event Management</h2>
+            <p class="eyebrow" data-i18n="admin.dashboard">ADMIN DASHBOARD</p>
+            <h2 data-i18n="admin.management">Event Management</h2>
           </div>
-          <button id="logoutAdminBtn" class="btn btn-secondary" type="button">Logout</button>
+          <button id="logoutAdminBtn" class="btn btn-secondary" type="button" data-i18n="admin.logout">Logout</button>
         </div>
 
         <div class="admin-stats">
           <div class="stat-card">
-            <span>Total Upcoming Events</span>
+            <span data-i18n="admin.totalUpcoming">Total Upcoming Events</span>
             <strong id="totalUpcomingCount">0</strong>
           </div>
           <div class="stat-card">
-            <span>Stream Events</span>
+            <span data-i18n="admin.streams">Stream Events</span>
             <strong id="streamCount">0</strong>
           </div>
           <div class="stat-card">
-            <span>Tournament Events</span>
+            <span data-i18n="admin.tournaments">Tournament Events</span>
             <strong id="tournamentCount">0</strong>
           </div>
         </div>
@@ -372,92 +373,92 @@
 
         <div class="admin-grid">
           <form id="eventForm" class="event-form card-panel" novalidate>
-            <h3 id="eventFormTitle">Create Event</h3>
+            <h3 id="eventFormTitle" data-i18n="admin.createEvent">Create Event</h3>
             <input type="hidden" id="eventId" />
 
             <label>
-              Category
+              <span data-i18n="admin.category">Category</span>
               <select id="eventCategory" required>
-                <option value="STREAM">STREAM</option>
-                <option value="SCRIM">SCRIM</option>
-                <option value="TOURNAMENT">TOURNAMENT</option>
-                <option value="ANNOUNCEMENT">ANNOUNCEMENT</option>
-                <option value="COMMUNITY">COMMUNITY</option>
+                <option value="STREAM" data-i18n="category.STREAM">STREAM</option>
+                <option value="SCRIM" data-i18n="category.SCRIM">SCRIM</option>
+                <option value="TOURNAMENT" data-i18n="category.TOURNAMENT">TOURNAMENT</option>
+                <option value="ANNOUNCEMENT" data-i18n="category.ANNOUNCEMENT">ANNOUNCEMENT</option>
+                <option value="COMMUNITY" data-i18n="category.COMMUNITY">COMMUNITY</option>
               </select>
             </label>
 
             <label>
-              Title
+              <span data-i18n="admin.title">Title</span>
               <input type="text" id="eventTitle" maxlength="80" required />
             </label>
 
             <label>
-              Description
+              <span data-i18n="admin.description">Description</span>
               <textarea id="eventDescription" rows="3"></textarea>
             </label>
 
             <div class="two-col">
               <label>
-                Start Date
+                <span data-i18n="admin.startDate">Start Date</span>
                 <input type="date" id="eventStartDate" required />
               </label>
               <label>
-                End Date
+                <span data-i18n="admin.endDate">End Date</span>
                 <input type="date" id="eventEndDate" required />
               </label>
             </div>
 
             <div class="two-col">
               <label>
-                Start Time
+                <span data-i18n="admin.startTime">Start Time</span>
                 <input type="time" id="eventStartTime" required />
               </label>
               <label>
-                End Time
+                <span data-i18n="admin.endTime">End Time</span>
                 <input type="time" id="eventEndTime" required />
               </label>
             </div>
 
             <label>
-              Location / Platform
+              <span data-i18n="admin.location">Location / Platform</span>
               <input type="text" id="eventLocation" maxlength="100" />
             </label>
 
             <label>
-              External URL
+              <span data-i18n="admin.externalUrl">External URL</span>
               <input type="url" id="eventExternalUrl" placeholder="https://example.com" />
             </label>
 
             <div class="form-actions">
-              <button type="submit" class="btn btn-primary">Save Event</button>
-              <button type="button" id="resetEventFormBtn" class="btn btn-secondary">Reset</button>
+              <button type="submit" class="btn btn-primary" data-i18n="admin.save">Save Event</button>
+              <button type="button" id="resetEventFormBtn" class="btn btn-secondary" data-i18n="admin.reset">Reset</button>
             </div>
             <p id="eventValidation" class="form-status" role="alert" aria-live="polite"></p>
           </form>
 
           <div class="admin-table card-panel">
-            <h3>Event Records</h3>
+            <h3 data-i18n="admin.records">Event Records</h3>
             <div class="event-table-toolbar">
               <label>
-                Search by title
-                <input id="eventSearch" type="search" placeholder="Search events..." />
+                <span data-i18n="admin.searchTitle">Search by title</span>
+                <input id="eventSearch" type="search" placeholder="Search events..." data-i18n-placeholder="admin.searchPlaceholder" />
               </label>
               <label>
-                Category
+                <span data-i18n="admin.category">Category</span>
                 <select id="eventCategoryFilter">
-                  <option value="ALL">All categories</option>
-                  <option value="STREAM">Stream</option>
-                  <option value="SCRIM">Scrim</option>
-                  <option value="TOURNAMENT">Tournament</option>
-                  <option value="ANNOUNCEMENT">Announcement</option>
-                  <option value="COMMUNITY">Community</option>
+                  <option value="ALL" data-i18n="admin.allCategories">All categories</option>
+                  <option value="STREAM" data-i18n="category.STREAM">Stream</option>
+                  <option value="SCRIM" data-i18n="category.SCRIM">Scrim</option>
+                  <option value="TOURNAMENT" data-i18n="category.TOURNAMENT">Tournament</option>
+                  <option value="ANNOUNCEMENT" data-i18n="category.ANNOUNCEMENT">Announcement</option>
+                  <option value="COMMUNITY" data-i18n="category.COMMUNITY">Community</option>
                 </select>
               </label>
               <label>
-                Sort by date
+                <span data-i18n="admin.sortDate">Sort by date</span>
                 <select id="eventDateSort">
-                  <option value="asc">Earliest first</option>
-                  <option value="desc">Latest first</option>
+                  <option value="asc" data-i18n="admin.earliest">Earliest first</option>
+                  <option value="desc" data-i18n="admin.latest">Latest first</option>
                 </select>
               </label>
             </div>

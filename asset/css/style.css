@@ -93,6 +93,14 @@ h4 {
   line-height: 1.1;
 }
 
+html[lang="vi"] h2,
+html[lang="vi"] h3,
+html[lang="vi"] h4,
+html[lang="vi"] .feature-place {
+  font-family: "Inter", sans-serif;
+  letter-spacing: normal;
+}
+
 h1 {
   font-size: clamp(2.5rem, 5vw, 5rem);
   letter-spacing: 0.08em;
@@ -189,6 +197,24 @@ p {
   border: 1px solid rgba(0, 166, 232, 0.35);
   padding: 0.7rem 1rem;
   border-radius: 999px;
+  color: var(--text);
+}
+
+.language-toggle {
+  flex: 0 0 auto;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(0, 166, 232, 0.08);
+  color: var(--text-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.language-toggle:hover {
+  border-color: rgba(0, 166, 232, 0.65);
   color: var(--text);
 }
 
