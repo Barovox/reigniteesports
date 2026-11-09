@@ -996,6 +996,7 @@ function localizeAdminStatus(message) {
     'End date and time must be later than the start date and time.': 'Ngày và giờ kết thúc phải sau ngày và giờ bắt đầu.',
     'Enter a valid external URL starting with http:// or https://.': 'Vui lòng nhập URL hợp lệ bắt đầu bằng http:// hoặc https://.',
     'Select a valid event category.': 'Vui lòng chọn danh mục sự kiện hợp lệ.',
+    'This event overlaps another event. Choose a different date or time.': 'Lịch này bị trùng với một sự kiện khác. Vui lòng chọn ngày hoặc giờ khác.',
     'Creating event...': 'Đang tạo sự kiện...',
     'Updating event…': 'Đang cập nhật sự kiện…',
     'Event updated successfully.': 'Cập nhật sự kiện thành công.',
@@ -1019,7 +1020,9 @@ function localizeAdminStatus(message) {
     ['Event was deleted, but the list could not be refreshed: ', 'Đã xóa sự kiện nhưng không thể tải lại danh sách: ']
   ];
   const prefix = prefixes.find(([english]) => message.startsWith(english));
-  return prefix ? `${prefix[1]}${message.slice(prefix[0].length)}` : message;
+  if (!prefix) return message;
+  const detail = message.slice(prefix[0].length);
+  return `${prefix[1]}${exactMessages[detail] || detail}`;
 }
 
 async function checkEventAdmin(userId) {

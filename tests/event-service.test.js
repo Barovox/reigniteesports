@@ -9,6 +9,9 @@ function createMemoryClient() {
     from(table) {
       assert.equal(table, 'events');
       return {
+        select() {
+          return Promise.resolve({ data: events, error: null });
+        },
         insert(record) {
           events.push(record);
           return {
@@ -42,6 +45,21 @@ function createMemoryClient() {
   };
 }
 
+function makeEvent(id, startTime, endTime, startDate = '2026-11-10', endDate = startDate) {
+  return {
+    ...validInput,
+    id,
+    startDate,
+    endDate,
+    startTime,
+    endTime,
+    start_date: startDate,
+    end_date: endDate,
+    start_time: startTime,
+    end_time: endTime
+  };
+}
+
 const validInput = {
   title: 'League Scrim',
   startDate: '2026-11-10',
@@ -52,16 +70,28 @@ const validInput = {
   category: 'SCRIM'
 };
 
-test('allows creating multiple events with overlapping schedule times', async () => {
+test('rejects events whose schedule overlaps an existing event', async () => {
   const client = createMemoryClient();
-  const first = { ...validInput, id: 'first', title: 'Scrim A' };
-  const second = { ...validInput, id: 'second', title: 'Scrim B', startTime: '19:30' };
+  const first = makeEvent('first', '19:00', '21:00');
+  const second = { ...makeEvent('second', '20:30', '22:30'), title: 'Scrim B' };
 
   await saveEventRecord(client, first, '');
-  await saveEventRecord(client, second, '');
 
-  assert.equal(client.events.length, 2);
-  assert.deepEqual(client.events.map(({ id }) => id), ['first', 'second']);
+  await assert.rejects(
+    saveEventRecord(client, second, ''),
+    /This event overlaps another event/
+  );
+  assert.equal(client.events.length, 1);
+});
+
+test('allows back-to-back events and events on separate dates', async () => {
+  const client = createMemoryClient();
+  await saveEventRecord(client, makeEvent('first', '19:00', '20:00'), '');
+
+  await saveEventRecord(client, makeEvent('second', '20:00', '21:00'), '');
+  await saveEventRecord(client, makeEvent('third', '19:00', '20:00', '2026-11-11'), '');
+
+  assert.equal(client.events.length, 3);
 });
 
 test('rejects events whose end time is not after their start time', () => {
@@ -82,10 +112,10 @@ test('rejects invalid URLs and unsupported categories', () => {
 
 test('updates an existing event rather than creating a duplicate', async () => {
   const client = createMemoryClient();
-  const original = { ...validInput, id: 'existing' };
+  const original = { ...makeEvent('existing', '19:00', '20:00') };
   await saveEventRecord(client, original, '');
 
-  const updated = { ...original, title: 'Updated Scrim' };
+  const updated = { ...original, title: 'Updated Scrim', start_time: '18:30', end_time: '20:30' };
   await saveEventRecord(client, updated, 'existing');
 
   assert.equal(client.events.length, 1);
@@ -96,6 +126,9 @@ test('surfaces errors returned by Supabase', async () => {
   const client = {
     from() {
       return {
+        select() {
+          return Promise.resolve({ data: [], error: null });
+        },
         insert() {
           return {
             select() {

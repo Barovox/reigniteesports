@@ -43,26 +43,35 @@ BEGIN
 END;
 $$;
 
--- Allow multiple events to occupy overlapping schedule times.
-DO $$
-DECLARE
-  overlap_constraint record;
+CREATE OR REPLACE FUNCTION public.prevent_overlapping_events()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = ''
+AS $$
 BEGIN
-  FOR overlap_constraint IN
-    SELECT constraint_info.conname
-    FROM pg_constraint AS constraint_info
-    WHERE constraint_info.conrelid = 'schedule.events'::regclass
-      AND constraint_info.contype = 'x'
-      AND pg_get_constraintdef(constraint_info.oid) ~* 'start_(date|time)'
-      AND pg_get_constraintdef(constraint_info.oid) ~* 'end_(date|time)'
-  LOOP
-    EXECUTE format(
-      'ALTER TABLE schedule.events DROP CONSTRAINT %I',
-      overlap_constraint.conname
-    );
-  END LOOP;
+  PERFORM pg_catalog.pg_advisory_xact_lock(172901, 1);
+
+  IF EXISTS (
+    SELECT 1
+    FROM schedule.events AS existing
+    WHERE existing.id <> NEW.id
+      AND (existing.start_date + existing.start_time) < (NEW.end_date + NEW.end_time)
+      AND (existing.end_date + existing.end_time) > (NEW.start_date + NEW.start_time)
+  ) THEN
+    RAISE EXCEPTION 'Event schedule conflicts with an existing event.'
+      USING ERRCODE = '23P01';
+  END IF;
+
+  RETURN NEW;
 END;
 $$;
+
+DROP TRIGGER IF EXISTS prevent_overlapping_events ON schedule.events;
+CREATE TRIGGER prevent_overlapping_events
+  BEFORE INSERT OR UPDATE OF start_date, start_time, end_date, end_time
+  ON schedule.events
+  FOR EACH ROW
+  EXECUTE FUNCTION public.prevent_overlapping_events();
 
 CREATE TABLE IF NOT EXISTS public.event_admins (
   user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
