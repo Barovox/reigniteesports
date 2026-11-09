@@ -126,7 +126,7 @@ const translations = {
 
 const playerTranslations = {
   tuan18: {
-    role: 'Đội trưởng chiến thuật (IGL)',
+    role: 'Đội trưởng (IGL)',
     summary: 'Thủ lĩnh chiến thuật dẫn dắt đội tuyển bằng sự bình tĩnh và khả năng vận hành chính xác.'
   },
   nomk3: {
