@@ -901,6 +901,16 @@ p {
   color: #90f0bf;
 }
 
+.event-badge.announcement {
+  background: rgba(250, 187, 24, 0.14);
+  color: #ffd86a;
+}
+
+.event-badge.community {
+  background: rgba(185, 132, 255, 0.14);
+  color: #d3b3ff;
+}
+
 .event-item h4 {
   font-size: 1rem;
   margin: 0 0 0.35rem;
@@ -1221,6 +1231,36 @@ p {
   overflow-x: auto;
 }
 
+.event-table-toolbar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin: 1.1rem 0;
+}
+
+.event-table-toolbar label {
+  display: grid;
+  gap: 0.45rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.event-table-toolbar input,
+.event-table-toolbar select {
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 0.7rem 0.8rem;
+  color: var(--text);
+}
+
+.event-table-toolbar select option,
+.event-form select option {
+  color: #0b111b;
+}
+
 .admin-event-table table {
   width: 100%;
   border-collapse: collapse;
@@ -1244,6 +1284,12 @@ p {
 
 .admin-event-table td {
   color: var(--text-soft);
+}
+
+.admin-event-description {
+  min-width: 180px;
+  max-width: 270px;
+  color: var(--muted) !important;
 }
 
 .admin-event-table .table-actions {
@@ -1649,6 +1695,10 @@ p {
 
   .creator-card,
   .player-modal-body {
+    grid-template-columns: 1fr;
+  }
+
+  .event-table-toolbar {
     grid-template-columns: 1fr;
   }
 }

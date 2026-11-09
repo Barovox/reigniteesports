@@ -371,7 +371,7 @@
         <p id="adminStatus" class="form-status" role="status" aria-live="polite"></p>
 
         <div class="admin-grid">
-          <form id="eventForm" class="event-form card-panel">
+          <form id="eventForm" class="event-form card-panel" novalidate>
             <h3 id="eventFormTitle">Create Event</h3>
             <input type="hidden" id="eventId" />
 
@@ -380,6 +380,8 @@
               <select id="eventCategory" required>
                 <option value="STREAM">STREAM</option>
                 <option value="TOURNAMENT">TOURNAMENT</option>
+                <option value="ANNOUNCEMENT">ANNOUNCEMENT</option>
+                <option value="COMMUNITY">COMMUNITY</option>
               </select>
             </label>
 
@@ -390,7 +392,7 @@
 
             <label>
               Description
-              <textarea id="eventDescription" rows="3" required></textarea>
+              <textarea id="eventDescription" rows="3"></textarea>
             </label>
 
             <div class="two-col">
@@ -417,7 +419,7 @@
 
             <label>
               Location / Platform
-              <input type="text" id="eventLocation" maxlength="100" required />
+              <input type="text" id="eventLocation" maxlength="100" />
             </label>
 
             <label>
@@ -429,10 +431,34 @@
               <button type="submit" class="btn btn-primary">Save Event</button>
               <button type="button" id="resetEventFormBtn" class="btn btn-secondary">Reset</button>
             </div>
+            <p id="eventValidation" class="form-status" role="alert" aria-live="polite"></p>
           </form>
 
           <div class="admin-table card-panel">
             <h3>Event Records</h3>
+            <div class="event-table-toolbar">
+              <label>
+                Search by title
+                <input id="eventSearch" type="search" placeholder="Search events..." />
+              </label>
+              <label>
+                Category
+                <select id="eventCategoryFilter">
+                  <option value="ALL">All categories</option>
+                  <option value="STREAM">Stream</option>
+                  <option value="TOURNAMENT">Tournament</option>
+                  <option value="ANNOUNCEMENT">Announcement</option>
+                  <option value="COMMUNITY">Community</option>
+                </select>
+              </label>
+              <label>
+                Sort by date
+                <select id="eventDateSort">
+                  <option value="asc">Earliest first</option>
+                  <option value="desc">Latest first</option>
+                </select>
+              </label>
+            </div>
             <div id="adminEventTable" class="admin-event-table"></div>
           </div>
         </div>

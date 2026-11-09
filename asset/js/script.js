@@ -79,7 +79,12 @@ const appState = {
   adminUserId: null,
   events: [],
   eventsLoaded: false,
-  eventError: ''
+  eventError: '',
+  eventFilters: {
+    query: '',
+    category: 'ALL',
+    dateSort: 'asc'
+  }
 };
 
 const EVENT_VIEW_MAP = {
@@ -262,7 +267,7 @@ async function loadEvents() {
     appState.eventError = 'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in .env.local.';
     appState.eventsLoaded = true;
     renderCalendar();
-    return;
+    return false;
   }
 
   appState.eventsLoaded = false;
@@ -282,13 +287,18 @@ async function loadEvents() {
     appState.events = [];
     appState.eventsLoaded = true;
     renderCalendar();
-    return;
+    if (appState.adminLoggedIn) renderAdminEvents();
+    return false;
   }
 
   if (error) {
-    appState.eventError = error.code === 'PGRST205'
-      ? 'Supabase cannot find schedule.events. Expose the schedule schema in the Supabase API settings and run supabase/schema.sql.'
-      : `Unable to load events: ${error.message}`;
+    if (error.code === 'PGRST205') {
+      appState.eventError = 'Supabase cannot find schedule.events. Expose the schedule schema in the Supabase API settings and run supabase/schema.sql.';
+    } else if (error.code === '42501' || error.code === 'PGRST106') {
+      appState.eventError = 'Supabase denied access to the schedule schema. Add schedule to Exposed schemas and run supabase/schema.sql to apply grants and RLS policies.';
+    } else {
+      appState.eventError = `Unable to load events: ${error.message}`;
+    }
     appState.events = [];
   } else {
     appState.events = data || [];
@@ -297,6 +307,7 @@ async function loadEvents() {
   appState.eventsLoaded = true;
   renderCalendar();
   if (appState.adminLoggedIn) renderAdminEvents();
+  return !appState.eventError;
 }
 
 function sortEvents(events) {
@@ -335,10 +346,11 @@ function eventOccursOnDate(event, dateKey) {
 
 function isUpcoming(event) {
   const today = toDateKey(new Date());
+  if (event.end_date < today) return false;
   if (event.start_date > today) return true;
-  if (event.start_date < today) return false;
+  if (event.end_date > today) return true;
   const currentTime = new Date().toTimeString().slice(0, 5);
-  return (event.start_time || '00:00').slice(0, 5) >= currentTime;
+  return (event.end_time || '00:00').slice(0, 5) >= currentTime;
 }
 
 function renderCalendar() {
@@ -536,33 +548,46 @@ function initEventForm() {
     const endTime = document.getElementById('eventEndTime').value;
     const location = document.getElementById('eventLocation').value.trim();
     const externalUrl = document.getElementById('eventExternalUrl').value.trim();
+    const validationStatus = 'eventValidation';
+    setAdminStatus('');
 
-    if (!title || !description || !startDate || !endDate || !startTime || !endTime || !location) {
-      alert('Please complete all required fields.');
+    if (!title || !startDate || !startTime || !endDate || !endTime) {
+      setAdminStatus('Enter an event title, start date and time, and end date and time.', true, validationStatus);
       return;
     }
 
-    if (new Date(`${startDate}T${startTime}`) > new Date(`${endDate}T${endTime}`)) {
-      alert('End date and time must be after start date and time.');
+    if (`${endDate}T${endTime}` <= `${startDate}T${startTime}`) {
+      setAdminStatus('End date and time must be later than the start date and time.', true, validationStatus);
+      return;
+    }
+
+    if (externalUrl && !safeExternalUrl(externalUrl)) {
+      setAdminStatus('Enter a valid external URL starting with http:// or https://.', true, validationStatus);
+      return;
+    }
+
+    if (!['STREAM', 'TOURNAMENT', 'ANNOUNCEMENT', 'COMMUNITY'].includes(category)) {
+      setAdminStatus('Select a valid event category.', true, validationStatus);
       return;
     }
 
     const record = {
       title,
-      description,
+      description: description || '',
       category,
       id: id || crypto.randomUUID(),
       start_date: startDate,
       start_time: startTime,
       end_date: endDate,
       end_time: endTime,
-      location,
+      location: location || '',
       external_url: externalUrl
     };
 
     const saveButton = form.querySelector('button[type="submit"]');
+    if (saveButton.disabled) return;
     saveButton.disabled = true;
-    setAdminStatus(id ? 'Updating event…' : 'Creating event…');
+    setAdminStatus(id ? 'Updating event…' : 'Creating event...');
 
     let result;
     try {
@@ -581,12 +606,28 @@ function initEventForm() {
       return;
     }
 
-    await loadEvents();
-    setAdminStatus(id ? 'Event updated.' : 'Event created.');
+    const refreshed = await loadEvents();
+    if (refreshed) {
+      setAdminStatus(id ? 'Event updated successfully.' : 'Event created successfully.');
+    } else {
+      setAdminStatus(`Event was saved, but the list could not be refreshed: ${appState.eventError}`, true);
+    }
     resetEventForm();
   });
 
   document.getElementById('resetEventFormBtn')?.addEventListener('click', resetEventForm);
+  document.getElementById('eventSearch')?.addEventListener('input', (event) => {
+    appState.eventFilters.query = event.target.value.trim().toLowerCase();
+    renderAdminEvents();
+  });
+  document.getElementById('eventCategoryFilter')?.addEventListener('change', (event) => {
+    appState.eventFilters.category = event.target.value;
+    renderAdminEvents();
+  });
+  document.getElementById('eventDateSort')?.addEventListener('change', (event) => {
+    appState.eventFilters.dateSort = event.target.value;
+    renderAdminEvents();
+  });
 }
 
 function resetEventForm() {
@@ -596,15 +637,21 @@ function resetEventForm() {
   document.getElementById('eventId').value = '';
   document.getElementById('eventFormTitle').textContent = 'Create Event';
   document.getElementById('eventCategory').value = 'STREAM';
+  setAdminStatus('', false, 'eventValidation');
 }
 
 function renderAdminEvents() {
   const tableWrap = document.getElementById('adminEventTable');
   if (!tableWrap) return;
 
-  const events = sortEvents(getEvents());
+  const { query, category, dateSort } = appState.eventFilters;
+  const events = sortEvents(getEvents())
+    .filter((event) => !query || event.title.toLowerCase().includes(query))
+    .filter((event) => category === 'ALL' || event.category === category);
+  if (dateSort === 'desc') events.reverse();
+
   if (!appState.eventsLoaded && !appState.eventError) {
-    tableWrap.innerHTML = '<div class="empty-state">Loading events…</div>';
+    tableWrap.innerHTML = '<div class="empty-state loading-state" role="status" aria-live="polite">Loading events…</div>';
     return;
   }
 
@@ -614,7 +661,7 @@ function renderAdminEvents() {
   }
 
   if (!events.length) {
-    tableWrap.innerHTML = '<div class="empty-state">No events found.</div>';
+    tableWrap.innerHTML = '<div class="empty-state">No events match these filters.</div>';
     return;
   }
 
@@ -624,7 +671,9 @@ function renderAdminEvents() {
         <tr>
           <th>Category</th>
           <th>Title</th>
-          <th>Date</th>
+          <th>Description</th>
+          <th>Start</th>
+          <th>End</th>
           <th>Location</th>
           <th>Actions</th>
         </tr>
@@ -634,7 +683,9 @@ function renderAdminEvents() {
           <tr>
             <td>${escapeHtml(event.category)}</td>
             <td>${escapeHtml(event.title)}</td>
-            <td>${escapeHtml(formatEventDateRange(event))}</td>
+            <td class="admin-event-description">${escapeHtml(event.description || '—')}</td>
+            <td>${escapeHtml(formatDate(event.start_date, { year: 'numeric', month: 'short', day: 'numeric' }))} ${escapeHtml((event.start_time || '').slice(0, 5))}</td>
+            <td>${escapeHtml(formatDate(event.end_date, { year: 'numeric', month: 'short', day: 'numeric' }))} ${escapeHtml((event.end_time || '').slice(0, 5))}</td>
             <td>${escapeHtml(event.location)}</td>
             <td class="table-actions">
               <button class="small-btn" type="button" data-edit-event="${escapeHtml(event.id)}">Edit</button>
@@ -647,7 +698,10 @@ function renderAdminEvents() {
   `;
 
   tableWrap.querySelectorAll('[data-edit-event]').forEach((button) => {
-    button.addEventListener('click', () => loadEventForEdit(button.dataset.editEvent));
+    button.addEventListener('click', () => {
+      loadEventForEdit(button.dataset.editEvent);
+      document.getElementById('eventFormTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
   });
 
   tableWrap.querySelectorAll('[data-delete-event]').forEach((button) => {
@@ -663,33 +717,44 @@ function loadEventForEdit(id) {
   document.getElementById('eventFormTitle').textContent = 'Edit Event';
   document.getElementById('eventCategory').value = event.category;
   document.getElementById('eventTitle').value = event.title;
-  document.getElementById('eventDescription').value = event.description;
+  document.getElementById('eventDescription').value = event.description || '';
   document.getElementById('eventStartDate').value = event.start_date;
   document.getElementById('eventEndDate').value = event.end_date;
   document.getElementById('eventStartTime').value = event.start_time;
   document.getElementById('eventEndTime').value = event.end_time;
-  document.getElementById('eventLocation').value = event.location;
+  document.getElementById('eventLocation').value = event.location || '';
   document.getElementById('eventExternalUrl').value = event.external_url || '';
+  setAdminStatus('');
   document.getElementById('eventForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 async function deleteEvent(id) {
   if (!window.confirm('Delete this event?')) return;
 
+  const deleteButton = document.querySelector(`[data-delete-event="${CSS.escape(id)}"]`);
+  if (deleteButton?.disabled) return;
+  if (deleteButton) deleteButton.disabled = true;
+
   let error;
   try {
     ({ error } = await supabase.from('events').delete().eq('id', id));
   } catch (deleteError) {
+    if (deleteButton) deleteButton.disabled = false;
     setAdminStatus(`Unable to delete event: ${deleteError.message}`, true);
     return;
   }
   if (error) {
+    if (deleteButton) deleteButton.disabled = false;
     setAdminStatus(`Unable to delete event: ${error.message}`, true);
     return;
   }
 
-  await loadEvents();
-  setAdminStatus('Event deleted.');
+  const refreshed = await loadEvents();
+  if (refreshed) {
+    setAdminStatus('Event deleted.');
+  } else {
+    setAdminStatus(`Event was deleted, but the list could not be refreshed: ${appState.eventError}`, true);
+  }
   if (document.getElementById('eventId').value === id) resetEventForm();
 }
 
