@@ -1299,7 +1299,16 @@ p {
 .event-form,
 .admin-table {
   min-width: 0;
-  padding: 1.25rem;
+  padding: 1.5rem;
+}
+
+.event-form > h3,
+.admin-table > h3 {
+  padding: 0.2rem 0 0.85rem 0.9rem;
+  border-bottom: 1px solid rgba(120, 180, 255, 0.12);
+  border-left: 3px solid var(--primary);
+  margin-bottom: 0.2rem;
+  line-height: 1.25;
 }
 
 .event-form {
@@ -1919,7 +1928,7 @@ p {
 
   .event-form,
   .admin-table {
-    padding: 1rem;
+    padding: 1.15rem;
   }
 
   .event-form .form-actions {
