@@ -354,8 +354,22 @@ function setupIntro() {
 
 function setupHeader() {
   const header = document.querySelector('.site-header');
+  const brand = document.querySelector('.brand');
+  const brandLogo = brand?.querySelector('.brand-logo');
   const navToggle = document.querySelector('.nav-toggle');
   const nav = document.querySelector('.main-nav');
+
+  if (brand && brandLogo) {
+    brand.addEventListener('click', () => {
+      brandLogo.classList.remove('is-spinning');
+      void brandLogo.offsetWidth;
+      brandLogo.classList.add('is-spinning');
+    });
+    brandLogo.addEventListener('animationend', () => {
+      brandLogo.classList.remove('is-spinning');
+    });
+  }
+
   if (header) {
     window.addEventListener('scroll', () => {
       header.classList.toggle('scrolled', window.scrollY > 20);

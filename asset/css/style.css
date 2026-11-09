@@ -157,6 +157,19 @@ p {
   width: 100%;
 }
 
+.brand-logo.is-spinning {
+  animation: brand-logo-spin 700ms cubic-bezier(0.45, 0, 0.55, 1);
+}
+
+@keyframes brand-logo-spin {
+  50% {
+    transform: rotate(180deg) scale(1.08);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
 .main-nav {
   display: flex;
   align-items: center;
