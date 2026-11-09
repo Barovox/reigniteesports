@@ -1092,6 +1092,43 @@ p {
   box-shadow: var(--shadow);
 }
 
+.error-modal {
+  z-index: 220;
+}
+
+.error-modal-panel {
+  width: min(440px, 92vw);
+  padding: 2rem;
+  text-align: center;
+}
+
+.error-modal-panel h3 {
+  margin: 0.85rem 0 0.6rem;
+  color: #ff9aa8;
+}
+
+.error-modal-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto;
+  border: 1px solid rgba(255, 93, 115, 0.5);
+  border-radius: 50%;
+  color: #ff9aa8;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.error-modal-message {
+  margin-bottom: 1.25rem;
+  overflow-wrap: anywhere;
+}
+
+.error-modal-panel .btn {
+  min-width: 110px;
+}
+
 .player-modal-panel {
   padding: 2rem;
 }
@@ -1211,6 +1248,7 @@ p {
 }
 
 .admin-inner {
+  width: min(1500px, 100%);
   padding-top: 2.25rem;
   padding-bottom: 2.25rem;
 }
@@ -1253,19 +1291,50 @@ p {
 
 .admin-grid {
   display: grid;
-  grid-template-columns: minmax(300px, 0.9fr) minmax(0, 1.1fr);
-  gap: 1.4rem;
+  grid-template-columns: minmax(380px, 0.8fr) minmax(0, 1.2fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.event-form,
+.admin-table {
+  min-width: 0;
+  padding: 1.25rem;
 }
 
 .event-form {
   display: grid;
-  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.event-form h3,
+.event-form > .two-col,
+.event-form > label,
+.event-form .form-actions,
+.event-form > .form-status {
+  grid-column: 1 / -1;
+}
+
+.event-form > label {
+  min-width: 0;
+}
+
+.event-form input,
+.event-form textarea,
+.event-form select {
+  width: 100%;
+  min-width: 0;
+}
+
+.event-form textarea {
+  resize: vertical;
 }
 
 .two-col {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
 }
 
 .form-actions {
@@ -1276,7 +1345,9 @@ p {
 }
 
 .admin-event-table {
+  min-width: 0;
   overflow-x: auto;
+  overscroll-behavior-inline: contain;
 }
 
 .event-table-toolbar {
@@ -1312,15 +1383,37 @@ p {
 .admin-event-table table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 620px;
+  min-width: 680px;
+  table-layout: fixed;
 }
+
+.admin-event-table th:nth-child(1),
+.admin-event-table td:nth-child(1) { width: 12%; }
+
+.admin-event-table th:nth-child(2),
+.admin-event-table td:nth-child(2) { width: 16%; }
+
+.admin-event-table th:nth-child(3),
+.admin-event-table td:nth-child(3) { width: 19%; }
+
+.admin-event-table th:nth-child(4),
+.admin-event-table td:nth-child(4),
+.admin-event-table th:nth-child(5),
+.admin-event-table td:nth-child(5) { width: 15%; }
+
+.admin-event-table th:nth-child(6),
+.admin-event-table td:nth-child(6) { width: 12%; }
+
+.admin-event-table th:nth-child(7),
+.admin-event-table td:nth-child(7) { width: 11%; }
 
 .admin-event-table th,
 .admin-event-table td {
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 0.9rem 0.7rem;
+  padding: 0.65rem 0.45rem;
   text-align: left;
   vertical-align: top;
+  overflow-wrap: normal;
 }
 
 .admin-event-table th {
@@ -1335,9 +1428,10 @@ p {
 }
 
 .admin-event-description {
-  min-width: 180px;
-  max-width: 270px;
+  min-width: 120px;
+  max-width: 240px;
   color: var(--muted) !important;
+  overflow-wrap: anywhere !important;
 }
 
 .admin-event-table .table-actions {
@@ -1351,7 +1445,7 @@ p {
   background: rgba(255, 255, 255, 0.02);
   color: var(--text);
   border-radius: 999px;
-  padding: 0.4rem 0.7rem;
+  padding: 0.35rem 0.55rem;
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -1761,6 +1855,12 @@ p {
   }
 }
 
+@media (max-width: 1100px) {
+  .admin-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 @media (max-width: 760px) {
   .nav-toggle {
     display: block;
@@ -1790,6 +1890,51 @@ p {
 
   .admin-callout {
     display: grid;
+  }
+
+  .admin-panel {
+    padding: 1rem;
+  }
+
+  .admin-header {
+    flex-wrap: wrap;
+  }
+
+  .admin-stats {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 130px), 1fr));
+    gap: 0.7rem;
+  }
+
+  .admin-stats .stat-card {
+    padding: 1rem;
+  }
+
+  .admin-stats .stat-card strong {
+    font-size: 1.4rem;
+  }
+
+  .admin-inner {
+    width: 100%;
+  }
+
+  .event-form,
+  .admin-table {
+    padding: 1rem;
+  }
+
+  .event-form .form-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .event-form .form-actions .btn {
+    min-width: 0;
+    padding: 0.75rem 0.8rem;
+    font-size: 0.75rem;
+  }
+
+  .event-form > .two-col {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .section-shell {

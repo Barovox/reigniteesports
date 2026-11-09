@@ -117,6 +117,9 @@ const translations = {
   'admin.edit': ['Edit', 'Sửa'],
   'admin.delete': ['Delete', 'Xóa'],
   'admin.deleteConfirm': ['Delete this event?', 'Bạn có chắc muốn xóa sự kiện này không?'],
+  'admin.errorTitle': ['Something went wrong', 'Đã xảy ra lỗi'],
+  'admin.dismissError': ['OK', 'Đóng'],
+  'admin.closeError': ['Close error message', 'Đóng thông báo lỗi'],
   'category.STREAM': ['STREAM', 'PHÁT TRỰC TIẾP'],
   'category.SCRIM': ['SCRIM', 'ĐẤU TẬP'],
   'category.TOURNAMENT': ['TOURNAMENT', 'GIẢI ĐẤU'],
@@ -185,6 +188,10 @@ function applyTranslations() {
   document.querySelectorAll('.form-status[data-original-message]').forEach((element) => {
     element.textContent = localizeAdminStatus(element.dataset.originalMessage);
   });
+  const errorMessage = document.getElementById('errorModalMessage');
+  if (errorMessage?.dataset.originalMessage) {
+    errorMessage.textContent = localizeAdminStatus(errorMessage.dataset.originalMessage);
+  }
   const languageToggle = document.getElementById('languageToggle');
   if (languageToggle) {
     languageToggle.textContent = currentLanguage === 'vi' ? 'English' : 'Tiếng Việt';
@@ -298,6 +305,7 @@ async function initApp() {
   bindCalendarControls();
   bindAdminControls();
   bindPlayerModal();
+  bindErrorModal();
   bindNavLinks();
   syncAdminVisibility();
   initEventForm();
@@ -452,6 +460,35 @@ function bindPlayerModal() {
   modal.addEventListener('click', (event) => {
     if (event.target === modal) modal.setAttribute('aria-hidden', 'true');
   });
+}
+
+function bindErrorModal() {
+  const modal = document.getElementById('errorModal');
+  const closeButtons = modal?.querySelectorAll('#errorModalClose, #errorModalConfirm');
+  if (!modal || !closeButtons?.length) return;
+
+  closeButtons.forEach((button) => {
+    button.addEventListener('click', () => modal.setAttribute('aria-hidden', 'true'));
+  });
+  modal.addEventListener('click', (event) => {
+    if (event.target === modal) modal.setAttribute('aria-hidden', 'true');
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') {
+      modal.setAttribute('aria-hidden', 'true');
+    }
+  });
+}
+
+function showErrorModal(message) {
+  const modal = document.getElementById('errorModal');
+  const messageElement = document.getElementById('errorModalMessage');
+  if (!modal || !messageElement) return;
+
+  messageElement.dataset.originalMessage = message;
+  messageElement.textContent = localizeAdminStatus(message);
+  modal.setAttribute('aria-hidden', 'false');
+  document.getElementById('errorModalClose')?.focus();
 }
 
 function getEvents() {
@@ -782,7 +819,6 @@ function initEventForm() {
     const endTime = document.getElementById('eventEndTime').value;
     const location = document.getElementById('eventLocation').value.trim();
     const externalUrl = document.getElementById('eventExternalUrl').value.trim();
-    const validationStatus = 'eventValidation';
     setAdminStatus('');
 
     const validationError = validateEventInput({
@@ -795,7 +831,7 @@ function initEventForm() {
       category
     });
     if (validationError) {
-      setAdminStatus(validationError, true, validationStatus);
+      setAdminStatus(validationError, true);
       return;
     }
 
@@ -858,7 +894,6 @@ function resetEventForm() {
   document.getElementById('eventId').value = '';
   document.getElementById('eventFormTitle').textContent = t('admin.createEvent');
   document.getElementById('eventCategory').value = 'STREAM';
-  setAdminStatus('', false, 'eventValidation');
 }
 
 function renderAdminEvents() {
@@ -982,10 +1017,17 @@ async function deleteEvent(id) {
 function setAdminStatus(message, isError = false, targetId = 'adminStatus') {
   const status = document.getElementById(targetId);
   if (!status) return;
+  if (isError && message) {
+    status.dataset.originalMessage = '';
+    status.textContent = '';
+    status.classList.remove('error-state', 'success-state');
+    showErrorModal(message);
+    return;
+  }
   status.dataset.originalMessage = message;
   status.textContent = localizeAdminStatus(message);
-  status.classList.toggle('error-state', isError);
-  status.classList.toggle('success-state', Boolean(message) && !isError);
+  status.classList.remove('error-state');
+  status.classList.toggle('success-state', Boolean(message));
 }
 
 function localizeAdminStatus(message) {
@@ -997,6 +1039,7 @@ function localizeAdminStatus(message) {
     'Enter a valid external URL starting with http:// or https://.': 'Vui lòng nhập URL hợp lệ bắt đầu bằng http:// hoặc https://.',
     'Select a valid event category.': 'Vui lòng chọn danh mục sự kiện hợp lệ.',
     'This event overlaps another event. Choose a different date or time.': 'Lịch này bị trùng với một sự kiện khác. Vui lòng chọn ngày hoặc giờ khác.',
+    'Event schedule conflicts with an existing event.': 'Lịch này bị trùng với một sự kiện khác. Vui lòng chọn ngày hoặc giờ khác.',
     'Creating event...': 'Đang tạo sự kiện...',
     'Updating event…': 'Đang cập nhật sự kiện…',
     'Event updated successfully.': 'Cập nhật sự kiện thành công.',

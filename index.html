@@ -344,6 +344,16 @@
       </div>
     </div>
 
+    <div id="errorModal" class="modal error-modal" aria-hidden="true" role="alertdialog" aria-modal="true" aria-labelledby="errorModalTitle" aria-describedby="errorModalMessage">
+      <div class="modal-panel error-modal-panel">
+        <button id="errorModalClose" class="modal-close" type="button" aria-label="Close error message" data-i18n-aria-label="admin.closeError">&times;</button>
+        <span class="error-modal-icon" aria-hidden="true">!</span>
+        <h3 id="errorModalTitle" data-i18n="admin.errorTitle">Something went wrong</h3>
+        <p id="errorModalMessage" class="error-modal-message"></p>
+        <button id="errorModalConfirm" class="btn btn-primary" type="button" data-i18n="admin.dismissError">OK</button>
+      </div>
+    </div>
+
     <div id="adminPanel" class="admin-panel hidden">
       <div class="container admin-inner">
         <div class="admin-header">
@@ -376,25 +386,27 @@
             <h3 id="eventFormTitle" data-i18n="admin.createEvent">Create Event</h3>
             <input type="hidden" id="eventId" />
 
-            <label>
-              <span data-i18n="admin.category">Category</span>
-              <select id="eventCategory" required>
-                <option value="STREAM" data-i18n="category.STREAM">STREAM</option>
-                <option value="SCRIM" data-i18n="category.SCRIM">SCRIM</option>
-                <option value="TOURNAMENT" data-i18n="category.TOURNAMENT">TOURNAMENT</option>
-                <option value="ANNOUNCEMENT" data-i18n="category.ANNOUNCEMENT">ANNOUNCEMENT</option>
-                <option value="COMMUNITY" data-i18n="category.COMMUNITY">COMMUNITY</option>
-              </select>
-            </label>
+            <div class="two-col">
+              <label>
+                <span data-i18n="admin.category">Category</span>
+                <select id="eventCategory" required>
+                  <option value="STREAM" data-i18n="category.STREAM">STREAM</option>
+                  <option value="SCRIM" data-i18n="category.SCRIM">SCRIM</option>
+                  <option value="TOURNAMENT" data-i18n="category.TOURNAMENT">TOURNAMENT</option>
+                  <option value="ANNOUNCEMENT" data-i18n="category.ANNOUNCEMENT">ANNOUNCEMENT</option>
+                  <option value="COMMUNITY" data-i18n="category.COMMUNITY">COMMUNITY</option>
+                </select>
+              </label>
 
-            <label>
-              <span data-i18n="admin.title">Title</span>
-              <input type="text" id="eventTitle" maxlength="80" required />
-            </label>
+              <label>
+                <span data-i18n="admin.title">Title</span>
+                <input type="text" id="eventTitle" maxlength="80" required />
+              </label>
+            </div>
 
             <label>
               <span data-i18n="admin.description">Description</span>
-              <textarea id="eventDescription" rows="3"></textarea>
+              <textarea id="eventDescription" rows="2"></textarea>
             </label>
 
             <div class="two-col">
@@ -419,21 +431,22 @@
               </label>
             </div>
 
-            <label>
-              <span data-i18n="admin.location">Location / Platform</span>
-              <input type="text" id="eventLocation" maxlength="100" />
-            </label>
+            <div class="two-col">
+              <label>
+                <span data-i18n="admin.location">Location / Platform</span>
+                <input type="text" id="eventLocation" maxlength="100" />
+              </label>
 
-            <label>
-              <span data-i18n="admin.externalUrl">External URL</span>
-              <input type="url" id="eventExternalUrl" placeholder="https://example.com" />
-            </label>
+              <label>
+                <span data-i18n="admin.externalUrl">External URL</span>
+                <input type="url" id="eventExternalUrl" placeholder="https://example.com" />
+              </label>
+            </div>
 
             <div class="form-actions">
               <button type="submit" class="btn btn-primary" data-i18n="admin.save">Save Event</button>
               <button type="button" id="resetEventFormBtn" class="btn btn-secondary" data-i18n="admin.reset">Reset</button>
             </div>
-            <p id="eventValidation" class="form-status" role="alert" aria-live="polite"></p>
           </form>
 
           <div class="admin-table card-panel">
