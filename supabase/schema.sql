@@ -50,6 +50,9 @@ CREATE TABLE IF NOT EXISTS public.event_admins (
 
 -- Replace only category CHECK constraints so all five supported categories
 -- can be stored, without touching existing event rows.
+ALTER TABLE schedule.events
+  DROP CONSTRAINT IF EXISTS schedule_events_category_check;
+
 DO $$
 DECLARE
   category_check record;
