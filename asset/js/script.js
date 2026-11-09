@@ -1,3 +1,5 @@
+import { publicSupabase, supabase } from './supabase.js';
+
 const players = [
   {
     id: 'tuan18',
@@ -13,7 +15,7 @@ const players = [
       '4th Place – PUBG Mobile Pro League Vietnam Fall 2026.'
     ],
     tiktok: 'https://www.tiktok.com/@tuanm1369?lang=en',
-    image: 'asset/image/Tuan18.png',
+    image: new URL('../image/Tuan18.jpg', import.meta.url).href,
     initials: 'T18'
   },
   {
@@ -30,7 +32,7 @@ const players = [
       '4th Place – PUBG Mobile Pro League Vietnam Fall 2026.'
     ],
     tiktok: 'https://www.tiktok.com/@nomkarba?lang=en',
-    image: 'asset/image/NomK3.png',
+    image: new URL('../image/NomK3.jpg', import.meta.url).href,
     initials: 'N3'
   },
   {
@@ -51,7 +53,7 @@ const players = [
       '4th Place – PUBG Mobile Pro League Vietnam Fall 2026.'
     ],
     tiktok: 'https://www.tiktok.com/@boy050824?lang=en',
-    image: 'asset/image/BoyTi.png',
+    image: new URL('../image/BoyTi.jpg', import.meta.url).href,
     initials: 'B'
   },
   {
@@ -64,42 +66,8 @@ const players = [
       '4th Place – PUBG Mobile Pro League Vietnam Fall 2026.'
     ],
     tiktok: 'https://www.tiktok.com/@longh111107?lang=en',
-    image: 'asset/image/LongH.png',
+    image: new URL('../image/LongH.jpg', import.meta.url).href,
     initials: 'L'
-  }
-];
-
-const EVENT_STORAGE_KEY = 'reignite-events';
-const ADMIN_SESSION_KEY = 'reignite-admin-session';
-
-const defaultEvents = [
-  {
-    id: 'evt-1',
-    title: 'RN Community Stream',
-    description: 'Community showcase and team updates with match analysis.',
-    category: 'STREAM',
-    start_date: '2026-11-12',
-    start_time: '19:00',
-    end_date: '2026-11-12',
-    end_time: '20:30',
-    location: 'Twitch',
-    external_url: 'https://www.twitch.tv/',
-    created_at: '2026-11-10T09:00:00.000Z',
-    updated_at: '2026-11-10T09:00:00.000Z'
-  },
-  {
-    id: 'evt-2',
-    title: 'PUBG Mobile Scrim vs. Rising Stars',
-    description: 'Official scrim and team performance review ahead of the next qualifier.',
-    category: 'TOURNAMENT',
-    start_date: '2026-11-18',
-    start_time: '18:00',
-    end_date: '2026-11-18',
-    end_time: '21:00',
-    location: 'RN Training Facility',
-    external_url: '',
-    created_at: '2026-11-10T09:15:00.000Z',
-    updated_at: '2026-11-10T09:15:00.000Z'
   }
 ];
 
@@ -107,7 +75,11 @@ const appState = {
   activeView: 'month',
   selectedDate: new Date(),
   currentMonth: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-  adminLoggedIn: localStorage.getItem(ADMIN_SESSION_KEY) === 'true'
+  adminLoggedIn: false,
+  adminUserId: null,
+  events: [],
+  eventsLoaded: false,
+  eventError: ''
 };
 
 const EVENT_VIEW_MAP = {
@@ -116,17 +88,18 @@ const EVENT_VIEW_MAP = {
   day: 'Day'
 };
 
-function initApp() {
+async function initApp() {
   setupIntro();
   setupHeader();
   renderPlayers();
-  renderCalendar();
   bindCalendarControls();
   bindAdminControls();
   bindPlayerModal();
   bindNavLinks();
   syncAdminVisibility();
   initEventForm();
+  await restoreAdminSession();
+  await loadEvents();
 }
 
 function setupIntro() {
@@ -260,26 +233,77 @@ function bindPlayerModal() {
 }
 
 function getEvents() {
-  try {
-    const stored = localStorage.getItem(EVENT_STORAGE_KEY);
-    if (!stored) {
-      localStorage.setItem(EVENT_STORAGE_KEY, JSON.stringify(defaultEvents));
-      return [...defaultEvents];
-    }
+  return appState.events;
+}
 
-    const parsed = JSON.parse(stored);
-    return Array.isArray(parsed) && parsed.length ? parsed : [...defaultEvents];
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[character]);
+}
+
+function safeExternalUrl(value) {
+  if (!value) return '';
+
+  try {
+    const url = new URL(value);
+    return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
   } catch {
-    localStorage.setItem(EVENT_STORAGE_KEY, JSON.stringify(defaultEvents));
-    return [...defaultEvents];
+    return '';
   }
+}
+
+async function loadEvents() {
+  if (!supabase) {
+    appState.eventError = 'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in .env.local.';
+    appState.eventsLoaded = true;
+    renderCalendar();
+    return;
+  }
+
+  appState.eventsLoaded = false;
+  appState.eventError = '';
+  renderCalendar();
+
+  let data;
+  let error;
+  try {
+    ({ data, error } = await supabase
+      .from('events')
+      .select('*')
+      .order('start_date', { ascending: true })
+      .order('start_time', { ascending: true }));
+  } catch (loadError) {
+    appState.eventError = `Unable to load events: ${loadError.message}`;
+    appState.events = [];
+    appState.eventsLoaded = true;
+    renderCalendar();
+    return;
+  }
+
+  if (error) {
+    appState.eventError = error.code === 'PGRST205'
+      ? 'Supabase cannot find schedule.events. Expose the schedule schema in the Supabase API settings and run supabase/schema.sql.'
+      : `Unable to load events: ${error.message}`;
+    appState.events = [];
+  } else {
+    appState.events = data || [];
+  }
+
+  appState.eventsLoaded = true;
+  renderCalendar();
+  if (appState.adminLoggedIn) renderAdminEvents();
 }
 
 function sortEvents(events) {
   return [...events].sort((a, b) => {
-    const aDateTime = new Date(`${a.start_date}T${a.start_time || '00:00'}`);
-    const bDateTime = new Date(`${b.start_date}T${b.start_time || '00:00'}`);
-    return aDateTime - bDateTime;
+    const dateOrder = a.start_date.localeCompare(b.start_date);
+    if (dateOrder !== 0) return dateOrder;
+    return (a.start_time || '').localeCompare(b.start_time || '');
   });
 }
 
@@ -290,10 +314,12 @@ function formatDate(dateString, options = { month: 'short', day: 'numeric' }) {
 
 function formatEventDateRange(event) {
   const sameDay = event.start_date === event.end_date;
+  const startTime = (event.start_time || '').slice(0, 5);
+  const endTime = (event.end_time || '').slice(0, 5);
   if (sameDay) {
-    return `${formatDate(event.start_date, { month: 'short', day: 'numeric' })} • ${event.start_time} - ${event.end_time}`;
+    return `${formatDate(event.start_date, { month: 'short', day: 'numeric' })} • ${startTime} - ${endTime}`;
   }
-  return `${formatDate(event.start_date, { month: 'short', day: 'numeric' })} - ${formatDate(event.end_date, { month: 'short', day: 'numeric' })}`;
+  return `${formatDate(event.start_date, { month: 'short', day: 'numeric' })} ${startTime} - ${formatDate(event.end_date, { month: 'short', day: 'numeric' })} ${endTime}`;
 }
 
 function toDateKey(date) {
@@ -301,6 +327,18 @@ function toDateKey(date) {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+function eventOccursOnDate(event, dateKey) {
+  return event.start_date <= dateKey && event.end_date >= dateKey;
+}
+
+function isUpcoming(event) {
+  const today = toDateKey(new Date());
+  if (event.start_date > today) return true;
+  if (event.start_date < today) return false;
+  const currentTime = new Date().toTimeString().slice(0, 5);
+  return (event.start_time || '00:00').slice(0, 5) >= currentTime;
 }
 
 function renderCalendar() {
@@ -313,7 +351,7 @@ function renderCalendar() {
   label.textContent = `${EVENT_VIEW_MAP[appState.activeView]} • ${new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(appState.currentMonth)}`;
 
   const events = sortEvents(getEvents());
-  const upcoming = events.filter((event) => new Date(`${event.start_date}T${event.start_time || '00:00'}`) >= new Date(new Date().setHours(0, 0, 0, 0)));
+  const upcoming = events.filter(isUpcoming);
 
   if (appState.activeView === 'month') {
     const startOfMonth = new Date(appState.currentMonth.getFullYear(), appState.currentMonth.getMonth(), 1);
@@ -331,18 +369,14 @@ function renderCalendar() {
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + i);
       const dateKey = toDateKey(date);
-      const dayEvents = events.filter((event) => {
-        const eventStart = new Date(`${event.start_date}T00:00:00`);
-        const eventEnd = new Date(`${event.end_date}T23:59:59`);
-        return date >= eventStart && date <= eventEnd;
-      });
+      const dayEvents = events.filter((event) => eventOccursOnDate(event, dateKey));
       const classes = ['calendar-day'];
       if (date.getMonth() !== appState.currentMonth.getMonth()) classes.push('is-other-month');
       if (toDateKey(new Date()) === dateKey) classes.push('is-today');
       if (toDateKey(appState.selectedDate) === dateKey) classes.push('selected');
 
       const labels = dayEvents.slice(0, 2).map((event) => `
-        <span class="day-event-type">${event.title}</span>
+        <span class="day-event-type">${escapeHtml(event.title)}</span>
       `).join('');
 
       cells.push(`
@@ -359,11 +393,7 @@ function renderCalendar() {
     const range = getVisibleDatesForView();
     const items = range.map((date) => {
       const dateKey = toDateKey(date);
-      const dayEvents = events.filter((event) => {
-        const eventStart = new Date(`${event.start_date}T00:00:00`);
-        const eventEnd = new Date(`${event.end_date}T23:59:59`);
-        return date >= eventStart && date <= eventEnd;
-      });
+      const dayEvents = events.filter((event) => eventOccursOnDate(event, dateKey));
       const classes = ['calendar-day'];
       if (toDateKey(appState.selectedDate) === dateKey) classes.push('selected');
 
@@ -371,7 +401,7 @@ function renderCalendar() {
         <button type="button" class="${classes.join(' ')}" data-date="${dateKey}" aria-label="Select ${dateKey}">
           <span class="day-number">${date.getDate()}</span>
           ${dayEvents.length ? '<span class="day-event-dot"></span>' : ''}
-          ${dayEvents.slice(0, 2).map((event) => `<span class="day-event-type">${event.title}</span>`).join('')}
+          ${dayEvents.slice(0, 2).map((event) => `<span class="day-event-type">${escapeHtml(event.title)}</span>`).join('')}
         </button>
       `;
     }).join('');
@@ -380,27 +410,26 @@ function renderCalendar() {
   }
 
   const selectedDateKey = toDateKey(appState.selectedDate);
-  const selectedEvents = events.filter((event) => {
-    const start = new Date(`${event.start_date}T00:00:00`);
-    const end = new Date(`${event.end_date}T23:59:59`);
-    const selected = new Date(`${selectedDateKey}T12:00:00`);
-    return selected >= start && selected <= end;
-  });
+  const selectedEvents = events.filter((event) => eventOccursOnDate(event, selectedDateKey));
 
   const list = selectedEvents.length ? selectedEvents : upcoming.slice(0, 4);
-  if (!list.length) {
-    eventList.innerHTML = '<div class="empty-state">No events scheduled. Log in as admin to create one.</div>';
+  if (!appState.eventsLoaded) {
+    eventList.innerHTML = '<div class="empty-state loading-state" role="status" aria-live="polite">Loading events…</div>';
+  } else if (appState.eventError) {
+    eventList.innerHTML = `<div class="empty-state error-state" role="alert">${escapeHtml(appState.eventError)}</div>`;
+  } else if (!list.length) {
+    eventList.innerHTML = '<div class="empty-state">No upcoming events. Sign in as an authorized admin to schedule one.</div>';
   } else {
     eventList.innerHTML = list.map((event) => `
       <article class="event-item">
         <div class="event-item-header">
-          <span class="event-badge ${event.category.toLowerCase()}">${event.category}</span>
+          <span class="event-badge ${escapeHtml(event.category.toLowerCase())}">${escapeHtml(event.category)}</span>
         </div>
-        <h4>${event.title}</h4>
-        <p>${event.description}</p>
-        <p>${formatEventDateRange(event)}</p>
-        <p>${event.location}</p>
-        ${event.external_url ? `<a href="${event.external_url}" target="_blank" rel="noreferrer">Open Link</a>` : ''}
+        <h4>${escapeHtml(event.title)}</h4>
+        <p>${escapeHtml(event.description)}</p>
+        <p>${escapeHtml(formatEventDateRange(event))}</p>
+        <p>${escapeHtml(event.location)}</p>
+        ${safeExternalUrl(event.external_url) ? `<a href="${escapeHtml(safeExternalUrl(event.external_url))}" target="_blank" rel="noreferrer">Open Link</a>` : ''}
       </article>
     `).join('');
   }
@@ -474,7 +503,7 @@ function bindCalendarControls() {
 
 function updateDashboardStats() {
   const events = getEvents();
-  const upcoming = events.filter((event) => new Date(`${event.start_date}T${event.start_time || '00:00'}`) >= new Date(new Date().setHours(0, 0, 0, 0)));
+  const upcoming = events.filter(isUpcoming);
 
   const totalUpcomingCount = document.getElementById('totalUpcomingCount');
   const streamCount = document.getElementById('streamCount');
@@ -489,11 +518,11 @@ function initEventForm() {
   const form = document.getElementById('eventForm');
   if (!form) return;
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
-    if (!appState.adminLoggedIn) {
-      alert('Please sign in to manage events.');
+    if (!appState.adminLoggedIn || !supabase) {
+      setAdminStatus('Sign in with an authorized admin account to manage events.', true);
       return;
     }
 
@@ -518,27 +547,42 @@ function initEventForm() {
       return;
     }
 
-    const now = new Date().toISOString();
-    const events = getEvents();
     const record = {
-      id: id || `evt-${Date.now()}`,
       title,
       description,
       category,
+      id: id || crypto.randomUUID(),
       start_date: startDate,
       start_time: startTime,
       end_date: endDate,
       end_time: endTime,
       location,
-      external_url: externalUrl,
-      created_at: id ? events.find((item) => item.id === id)?.created_at || now : now,
-      updated_at: now
+      external_url: externalUrl
     };
 
-    const nextEvents = id ? events.map((item) => (item.id === id ? record : item)) : [...events, record];
-    localStorage.setItem(EVENT_STORAGE_KEY, JSON.stringify(sortEvents(nextEvents)));
-    renderCalendar();
-    renderAdminEvents();
+    const saveButton = form.querySelector('button[type="submit"]');
+    saveButton.disabled = true;
+    setAdminStatus(id ? 'Updating event…' : 'Creating event…');
+
+    let result;
+    try {
+      result = id
+        ? await supabase.from('events').update(record).eq('id', id).select().single()
+        : await supabase.from('events').insert(record).select().single();
+    } catch (saveError) {
+      saveButton.disabled = false;
+      setAdminStatus(`Unable to save event: ${saveError.message}`, true);
+      return;
+    }
+
+    saveButton.disabled = false;
+    if (result.error) {
+      setAdminStatus(`Unable to save event: ${result.error.message}`, true);
+      return;
+    }
+
+    await loadEvents();
+    setAdminStatus(id ? 'Event updated.' : 'Event created.');
     resetEventForm();
   });
 
@@ -559,6 +603,16 @@ function renderAdminEvents() {
   if (!tableWrap) return;
 
   const events = sortEvents(getEvents());
+  if (!appState.eventsLoaded && !appState.eventError) {
+    tableWrap.innerHTML = '<div class="empty-state">Loading events…</div>';
+    return;
+  }
+
+  if (appState.eventError) {
+    tableWrap.innerHTML = `<div class="empty-state error-state" role="alert">${escapeHtml(appState.eventError)}</div>`;
+    return;
+  }
+
   if (!events.length) {
     tableWrap.innerHTML = '<div class="empty-state">No events found.</div>';
     return;
@@ -578,13 +632,13 @@ function renderAdminEvents() {
       <tbody>
         ${events.map((event) => `
           <tr>
-            <td>${event.category}</td>
-            <td>${event.title}</td>
-            <td>${formatEventDateRange(event)}</td>
-            <td>${event.location}</td>
+            <td>${escapeHtml(event.category)}</td>
+            <td>${escapeHtml(event.title)}</td>
+            <td>${escapeHtml(formatEventDateRange(event))}</td>
+            <td>${escapeHtml(event.location)}</td>
             <td class="table-actions">
-              <button class="small-btn" type="button" data-edit-event="${event.id}">Edit</button>
-              <button class="small-btn danger" type="button" data-delete-event="${event.id}">Delete</button>
+              <button class="small-btn" type="button" data-edit-event="${escapeHtml(event.id)}">Edit</button>
+              <button class="small-btn danger" type="button" data-delete-event="${escapeHtml(event.id)}">Delete</button>
             </td>
           </tr>
         `).join('')}
@@ -619,14 +673,84 @@ function loadEventForEdit(id) {
   document.getElementById('eventForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function deleteEvent(id) {
+async function deleteEvent(id) {
   if (!window.confirm('Delete this event?')) return;
 
-  const nextEvents = getEvents().filter((event) => event.id !== id);
-  localStorage.setItem(EVENT_STORAGE_KEY, JSON.stringify(sortEvents(nextEvents)));
-  renderCalendar();
-  renderAdminEvents();
+  let error;
+  try {
+    ({ error } = await supabase.from('events').delete().eq('id', id));
+  } catch (deleteError) {
+    setAdminStatus(`Unable to delete event: ${deleteError.message}`, true);
+    return;
+  }
+  if (error) {
+    setAdminStatus(`Unable to delete event: ${error.message}`, true);
+    return;
+  }
+
+  await loadEvents();
+  setAdminStatus('Event deleted.');
   if (document.getElementById('eventId').value === id) resetEventForm();
+}
+
+function setAdminStatus(message, isError = false, targetId = 'adminStatus') {
+  const status = document.getElementById(targetId);
+  if (!status) return;
+  status.textContent = message;
+  status.classList.toggle('error-state', isError);
+  status.classList.toggle('success-state', Boolean(message) && !isError);
+}
+
+async function checkEventAdmin(userId) {
+  try {
+    const { data, error } = await publicSupabase
+      .from('event_admins')
+      .select('user_id')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    return { isAdmin: Boolean(data), error };
+  } catch (error) {
+    return {
+      isAdmin: false,
+      error: error instanceof Error ? error : new Error('Unable to verify admin access.')
+    };
+  }
+}
+
+async function restoreAdminSession() {
+  if (!supabase) return;
+
+  let data;
+  let error;
+  try {
+    ({ data, error } = await supabase.auth.getSession());
+  } catch (sessionError) {
+    setAdminStatus(`Unable to restore admin session: ${sessionError.message}`, true, 'loginStatus');
+    return;
+  }
+  if (error) {
+    setAdminStatus(`Unable to restore admin session: ${error.message}`, true, 'loginStatus');
+    return;
+  }
+  if (!data.session?.user) return;
+
+  const { isAdmin, error: roleError } = await checkEventAdmin(data.session.user.id);
+  if (roleError) {
+    setAdminStatus(`Unable to verify admin access: ${roleError.message}`, true, 'loginStatus');
+    return;
+  }
+  if (!isAdmin) {
+    const { error: signOutError } = await supabase.auth.signOut();
+    if (signOutError) {
+      setAdminStatus(`This account is not an event admin, and sign out failed: ${signOutError.message}`, true, 'loginStatus');
+    }
+    return;
+  }
+
+  appState.adminLoggedIn = true;
+  appState.adminUserId = data.session.user.id;
+  syncAdminVisibility();
 }
 
 function bindAdminControls() {
@@ -643,28 +767,77 @@ function bindAdminControls() {
     if (event.target === loginModal) loginModal.setAttribute('aria-hidden', 'true');
   });
 
-  loginForm?.addEventListener('submit', (event) => {
+  loginForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (!supabase) {
+      setAdminStatus('Supabase is not configured. Add the required VITE_SUPABASE_* values.', true, 'loginStatus');
+      return;
+    }
+
     const email = document.getElementById('adminEmail').value.trim();
     const password = document.getElementById('adminPassword').value.trim();
 
-    if (email === 'admin@reigniteesports.com' && password === '2022@reignite') {
-      localStorage.setItem(ADMIN_SESSION_KEY, 'true');
-      appState.adminLoggedIn = true;
-      syncAdminVisibility();
-      loginModal.setAttribute('aria-hidden', 'true');
-      document.getElementById('loginForm').reset();
-      renderAdminEvents();
-    } else {
-      alert('Invalid credentials.');
+    const submitButton = loginForm.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    setAdminStatus('Signing in…', false, 'loginStatus');
+
+    let data;
+    let error;
+    try {
+      ({ data, error } = await supabase.auth.signInWithPassword({ email, password }));
+    } catch (signInError) {
+      submitButton.disabled = false;
+      setAdminStatus(`Unable to sign in: ${signInError.message}`, true, 'loginStatus');
+      return;
     }
+    if (error) {
+      submitButton.disabled = false;
+      setAdminStatus(error.message, true, 'loginStatus');
+      return;
+    }
+
+    const { isAdmin, error: roleError } = await checkEventAdmin(data.user.id);
+    if (roleError || !isAdmin) {
+      const { error: signOutError } = await supabase.auth.signOut();
+      submitButton.disabled = false;
+      setAdminStatus(
+        roleError
+          ? `Unable to verify admin access: ${roleError.message}${signOutError ? ` Sign out failed: ${signOutError.message}` : ''}`
+          : `This account does not have event admin access.${signOutError ? ` Sign out failed: ${signOutError.message}` : ''}`,
+        true,
+        'loginStatus'
+      );
+      return;
+    }
+
+    appState.adminLoggedIn = true;
+    appState.adminUserId = data.user.id;
+    syncAdminVisibility();
+    loginModal.setAttribute('aria-hidden', 'true');
+    loginForm.reset();
+    submitButton.disabled = false;
+    setAdminStatus('');
+    setAdminStatus('Signed in. Event management is ready.');
   });
 
-  logoutBtn?.addEventListener('click', () => {
-    localStorage.removeItem(ADMIN_SESSION_KEY);
+  logoutBtn?.addEventListener('click', async () => {
+    let error;
+    try {
+      ({ error } = await supabase.auth.signOut());
+    } catch (signOutError) {
+      setAdminStatus(`Unable to sign out: ${signOutError.message}`, true);
+      return;
+    }
+    if (error) {
+      setAdminStatus(`Unable to sign out: ${error.message}`, true);
+      return;
+    }
+
     appState.adminLoggedIn = false;
+    appState.adminUserId = null;
     syncAdminVisibility();
     renderCalendar();
+    setAdminStatus('');
   });
 }
 

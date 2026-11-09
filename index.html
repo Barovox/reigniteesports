@@ -331,13 +331,14 @@
         <form id="loginForm" class="login-form">
           <label>
             Email
-            <input type="email" id="adminEmail" placeholder="admin@reigniteesports.com" />
+            <input type="email" id="adminEmail" autocomplete="username" required />
           </label>
           <label>
             Password
-            <input type="password" id="adminPassword" placeholder="Enter password" />
+            <input type="password" id="adminPassword" autocomplete="current-password" required />
           </label>
           <button type="submit" class="btn btn-primary">Sign In</button>
+          <p id="loginStatus" class="form-status" role="status" aria-live="polite"></p>
         </form>
       </div>
     </div>
@@ -366,6 +367,8 @@
             <strong id="tournamentCount">0</strong>
           </div>
         </div>
+
+        <p id="adminStatus" class="form-status" role="status" aria-live="polite"></p>
 
         <div class="admin-grid">
           <form id="eventForm" class="event-form card-panel">
@@ -436,6 +439,6 @@
       </div>
     </div>
 
-    <script src="asset/js/script.js"></script>
+    <script type="module" src="asset/js/script.js"></script>
   </body>
 </html>

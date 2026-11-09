@@ -919,6 +919,44 @@ p {
   text-align: center;
 }
 
+.loading-state::before {
+  content: "";
+  display: inline-block;
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-right: 0.6rem;
+  vertical-align: -0.12rem;
+  border: 2px solid rgba(148, 163, 184, 0.35);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: event-spinner 0.75s linear infinite;
+}
+
+@keyframes event-spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.form-status {
+  min-height: 1.4em;
+  color: #90f0bf;
+  font-size: 0.84rem;
+}
+
+.form-status:empty {
+  display: none;
+}
+
+.form-status.error-state,
+.error-state {
+  color: #ff9aa8;
+}
+
+.form-status.success-state {
+  color: #90f0bf;
+}
+
 .admin-callout {
   display: flex;
   justify-content: space-between;
