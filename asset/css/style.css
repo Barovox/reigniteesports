@@ -159,14 +159,19 @@ p {
 
 .brand-logo.is-spinning {
   animation: brand-logo-spin 700ms cubic-bezier(0.45, 0, 0.55, 1);
+  backface-visibility: visible;
+  transform-style: preserve-3d;
 }
 
 @keyframes brand-logo-spin {
+  0% {
+    transform: perspective(600px) rotateY(0) scale(1);
+  }
   50% {
-    transform: rotate(180deg) scale(1.08);
+    transform: perspective(600px) rotateY(180deg) scale(1.08);
   }
   100% {
-    transform: rotate(360deg) scale(1);
+    transform: perspective(600px) rotateY(360deg) scale(1);
   }
 }
 
