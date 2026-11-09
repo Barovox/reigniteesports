@@ -648,7 +648,7 @@ function bindAdminControls() {
     const email = document.getElementById('adminEmail').value.trim();
     const password = document.getElementById('adminPassword').value.trim();
 
-    if (email === 'admin@reigniteesports.com' && password === 'reignite2026') {
+    if (email === 'admin@reigniteesports.com' && password === '2022@reignite') {
       localStorage.setItem(ADMIN_SESSION_KEY, 'true');
       appState.adminLoggedIn = true;
       syncAdminVisibility();
