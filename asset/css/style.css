@@ -849,6 +849,10 @@ p {
   text-overflow: ellipsis;
 }
 
+.day-event-time {
+  display: none;
+}
+
 .event-panel {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -1800,6 +1804,27 @@ p {
 
   .calendar-row {
     grid-template-columns: 1fr;
+  }
+
+  .day-event-type {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+  }
+
+  .day-event-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .day-event-time {
+    display: inline-flex;
+    flex: 0 0 auto;
+    color: var(--primary);
+    font-weight: 700;
+    letter-spacing: 0.04em;
   }
 }
 

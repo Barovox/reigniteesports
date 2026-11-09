@@ -348,6 +348,16 @@ function eventOccursOnDate(event, dateKey) {
   return event.start_date <= dateKey && event.end_date >= dateKey;
 }
 
+function renderCalendarEventLabel(event) {
+  const startTime = (event.start_time || '').slice(0, 5);
+  return `
+    <span class="day-event-type">
+      <span class="day-event-title">${escapeHtml(event.title)}</span>
+      ${startTime ? `<span class="day-event-time">${escapeHtml(startTime)}</span>` : ''}
+    </span>
+  `;
+}
+
 function isUpcoming(event) {
   const today = toDateKey(new Date());
   if (event.end_date < today) return false;
@@ -391,9 +401,7 @@ function renderCalendar() {
       if (toDateKey(new Date()) === dateKey) classes.push('is-today');
       if (toDateKey(appState.selectedDate) === dateKey) classes.push('selected');
 
-      const labels = dayEvents.slice(0, 2).map((event) => `
-        <span class="day-event-type">${escapeHtml(event.title)}</span>
-      `).join('');
+      const labels = dayEvents.slice(0, 2).map(renderCalendarEventLabel).join('');
 
       cells.push(`
         <button type="button" class="${classes.join(' ')}" data-date="${dateKey}" aria-label="Select ${dateKey}">
@@ -417,7 +425,7 @@ function renderCalendar() {
         <button type="button" class="${classes.join(' ')}" data-date="${dateKey}" aria-label="Select ${dateKey}">
           <span class="day-number">${date.getDate()}</span>
           ${dayEvents.length ? '<span class="day-event-dot"></span>' : ''}
-          ${dayEvents.slice(0, 2).map((event) => `<span class="day-event-type">${escapeHtml(event.title)}</span>`).join('')}
+          ${dayEvents.slice(0, 2).map(renderCalendarEventLabel).join('')}
         </button>
       `;
     }).join('');
