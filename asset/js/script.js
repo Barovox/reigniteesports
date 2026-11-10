@@ -83,6 +83,9 @@ const translations = {
   'admin.management': ['Event Management', 'Quản lý sự kiện'],
   'admin.logout': ['Logout', 'Đăng xuất'],
   'admin.totalUpcoming': ['Total Upcoming Events', 'Tổng sự kiện sắp tới'],
+  'admin.onlineUsers': ['Online Sessions', 'Phiên đang trực tuyến'],
+  'admin.onlineUnavailable': ['Realtime presence unavailable', 'Không thể kết nối trạng thái trực tuyến'],
+  'header.online': ['ONLINE', 'ĐANG TRỰC TUYẾN'],
   'admin.streams': ['Stream Events', 'Sự kiện phát trực tiếp'],
   'admin.tournaments': ['Tournament Events', 'Giải đấu'],
   'admin.createEvent': ['Create Event', 'Tạo sự kiện'],
@@ -301,7 +304,9 @@ async function initApp() {
   bindLanguageToggle();
   setupIntro();
   setupHeader();
+  setupOnlinePresence();
   renderPlayers();
+  setupDroneConstruction();
   bindCalendarControls();
   bindAdminControls();
   bindPlayerModal();
@@ -318,6 +323,10 @@ function bindLanguageToggle() {
     currentLanguage = currentLanguage === 'en' ? 'vi' : 'en';
     localStorage.setItem('reignite-language', currentLanguage);
     applyTranslations();
+    const presenceStatus = document.getElementById('onlineVisitorStatus');
+    if (presenceStatus && !presenceStatus.hidden) {
+      presenceStatus.textContent = t('admin.onlineUnavailable');
+    }
     renderPlayers();
     renderCalendar();
     renderAdminEvents();
@@ -354,16 +363,8 @@ function setupIntro() {
 
 function setupHeader() {
   const header = document.querySelector('.site-header');
-  const brand = document.querySelector('.brand');
-  const brandLogo = brand?.querySelector('.brand-logo');
   const navToggle = document.querySelector('.nav-toggle');
   const nav = document.querySelector('.main-nav');
-
-  if (brand && brandLogo) {
-    brand.addEventListener('click', () => {
-      revealLogoFromCenter(brand, brandLogo);
-    });
-  }
 
   if (header) {
     window.addEventListener('scroll', () => {
@@ -379,80 +380,404 @@ function setupHeader() {
   }
 }
 
-let logoRevealFrame = 0;
-let logoRevealCanvas = null;
-let logoRevealImage = null;
+function setupOnlinePresence() {
+  const countElement = document.getElementById('onlineVisitorCount');
+  const statusElement = document.getElementById('onlineVisitorStatus');
+  if (!countElement || !statusElement) return;
 
-function revealLogoFromCenter(brand, image) {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !image.complete || !image.naturalWidth) return;
-
-  if (logoRevealFrame) cancelAnimationFrame(logoRevealFrame);
-  logoRevealCanvas?.remove();
-  logoRevealImage?.classList.remove('is-pixelating');
-
-  const bounds = image.getBoundingClientRect();
-  const pixelRatio = window.devicePixelRatio || 1;
-  const canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d');
-  const columns = Math.max(1, Math.ceil(bounds.width / 6));
-  const rows = Math.max(1, Math.ceil(bounds.height / 6));
-  const pixelImage = document.createElement('canvas');
-  pixelImage.width = columns;
-  pixelImage.height = rows;
-  const pixelContext = pixelImage.getContext('2d');
-  if (!context || !pixelContext) return;
-
-  canvas.width = Math.round(bounds.width * pixelRatio);
-  canvas.height = Math.round(bounds.height * pixelRatio);
-  canvas.className = 'brand-logo-canvas';
-  canvas.setAttribute('aria-hidden', 'true');
-  pixelContext.imageSmoothingEnabled = true;
-  pixelContext.drawImage(image, 0, 0, columns, rows);
-
-  const cellWidth = canvas.width / columns;
-  const cellHeight = canvas.height / rows;
-  const centerX = (columns - 1) / 2;
-  const centerY = (rows - 1) / 2;
-  const cells = Array.from({ length: columns * rows }, (_, index) => {
-    const x = index % columns;
-    const y = Math.floor(index / columns);
-    return { x, y, distance: Math.hypot(x - centerX, y - centerY) };
-  }).sort((a, b) => a.distance - b.distance);
-
-  brand.append(canvas);
-  image.classList.add('is-pixelating');
-  logoRevealCanvas = canvas;
-  logoRevealImage = image;
-
-  const startedAt = performance.now();
-  const duration = 800;
-  let drawnCells = 0;
-  const drawFrame = (now) => {
-    if (canvas !== logoRevealCanvas) return;
-
-    const progress = Math.min((now - startedAt) / duration, 1);
-    const visibleCells = Math.ceil(progress * cells.length);
-    for (let index = drawnCells; index < visibleCells; index += 1) {
-      const { x, y } = cells[index];
-      const left = x * cellWidth;
-      const top = y * cellHeight;
-      context.drawImage(pixelImage, x, y, 1, 1, left, top, cellWidth + 0.5, cellHeight + 0.5);
+  const setUnavailable = (details = '') => {
+    countElement.textContent = '—';
+    statusElement.textContent = t('admin.onlineUnavailable');
+    statusElement.hidden = false;
+    if (details && appState.adminLoggedIn) {
+      setAdminStatus(`Online presence unavailable: ${details}`, true);
     }
-    drawnCells = visibleCells;
+  };
 
-    if (progress < 1) {
-      logoRevealFrame = requestAnimationFrame(drawFrame);
+  if (!supabase) {
+    setUnavailable();
+    return;
+  }
+
+  const presenceKey = globalThis.crypto?.randomUUID?.()
+    || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const channel = supabase.channel('reigniteesports-site-presence', {
+    config: { presence: { key: presenceKey } }
+  });
+
+  channel.on('presence', { event: 'sync' }, () => {
+    const sessions = Object.values(channel.presenceState())
+      .reduce((total, presences) => total + presences.length, 0);
+    countElement.textContent = String(sessions);
+    statusElement.hidden = true;
+    statusElement.textContent = '';
+  });
+
+  channel.subscribe(async (status) => {
+    if (status === 'SUBSCRIBED') {
+      try {
+        const result = await channel.track({ online_at: new Date().toISOString() });
+        if (result !== 'ok') setUnavailable(`Presence tracking returned "${result}".`);
+      } catch (error) {
+        setUnavailable(error instanceof Error ? error.message : String(error));
+      }
       return;
     }
 
-    image.classList.remove('is-pixelating');
-    canvas.remove();
-    logoRevealCanvas = null;
-    logoRevealImage = null;
-    logoRevealFrame = 0;
+    if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+      setUnavailable(`Realtime channel status: ${status}.`);
+    }
+  });
+}
+
+function setupDroneConstruction() {
+  const targetsSelector = [
+    'main .featured-achievement',
+    'main .achievement-column',
+    'main .player-card',
+    'main .event-item'
+  ].join(', ');
+  const isConstrainedDevice = window.matchMedia('(max-width: 760px)').matches
+    || (navigator.hardwareConcurrency || 4) <= 4;
+  const maxConcurrent = window.matchMedia('(max-width: 760px)').matches
+    ? 2
+    : isConstrainedDevice ? 3 : 4;
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const states = new Map();
+  const queue = [];
+  const active = new Map();
+  let observer;
+  let mutationObserver;
+  let viewportListeners;
+
+  if (!('IntersectionObserver' in window) || !Element.prototype.animate) return;
+
+  const clearTarget = (target) => {
+    target.classList.remove('drone-construct-pending', 'drone-constructing', 'drone-construct-reveal');
+    const construction = active.get(target);
+    if (construction) {
+      window.clearTimeout(construction.revealTimer);
+      construction.animations.forEach((animation) => animation.cancel());
+      construction.overlay.remove();
+      active.delete(target);
+    }
   };
 
-  logoRevealFrame = requestAnimationFrame(drawFrame);
+  const completeConstruction = (target, construction) => {
+    if (active.get(target) !== construction) return;
+    clearTarget(target);
+    target.classList.remove('drone-construct-reveal');
+    states.set(target, 'done');
+    drainQueue();
+  };
+
+  const createDrone = (overlay, start, destination, side, index) => {
+    const drone = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    drone.setAttribute('viewBox', '0 0 24 24');
+    drone.setAttribute('aria-hidden', 'true');
+    drone.classList.add('construction-drone', `construction-drone-${side}`);
+    drone.innerHTML = `
+      <path class="drone-craft-outline" d="M2 2 22 10.5 12.3 13 6.5 22z" />
+      <path class="drone-craft-core" d="m4.5 4.5 14.2 6.1-7.5 1.8-4.3 6.4z" />
+      <path class="drone-craft-glint" d="m6.3 5.7 5.1 2.2" />
+    `;
+    drone.style.left = `${start.x - 12}px`;
+    drone.style.top = `${start.y - 12}px`;
+    overlay.append(drone);
+
+    const dx = destination.x - start.x;
+    const dy = destination.y - start.y;
+    const departAngle = side === 'left' ? -7 : 7;
+    const arrivalAngle = index % 2 === 0 ? -3 : 3;
+    const arc = (index % 2 === 0 ? -1 : 1) * (42 + Math.random() * 52);
+    const launchDelay = Math.random() * 220;
+    const animation = drone.animate([
+      { transform: `translate(0, 0) rotate(${departAngle}deg) scale(.72)`, offset: 0 },
+      { transform: `translate(${dx * 0.46}px, ${dy * 0.46 + arc}px) rotate(${arrivalAngle}deg) scale(.9)`, offset: 0.4 },
+      { transform: `translate(${dx}px, ${dy}px) rotate(0) scale(1)`, offset: 0.66 },
+      { transform: `translate(${dx}px, ${dy}px) rotate(0) scale(1)`, offset: 0.76 },
+      { transform: `translate(${dx * 0.86}px, ${dy * 0.86}px) rotate(${-arrivalAngle}deg) scale(.9)`, offset: 0.89 },
+      { transform: `translate(0, 0) rotate(${-departAngle}deg) scale(.65)`, offset: 1 }
+    ], {
+      duration: 2650,
+      delay: launchDelay,
+      easing: 'cubic-bezier(.22,.72,.24,1)',
+      fill: 'forwards'
+    });
+
+    return animation;
+  };
+
+  const addConstructionFrame = (overlay, bounds, viewportWidth, viewportHeight, radius) => {
+    const frame = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    frame.setAttribute('viewBox', `0 0 ${viewportWidth} ${viewportHeight}`);
+    frame.setAttribute('preserveAspectRatio', 'none');
+    frame.classList.add('construction-frame');
+
+    const inset = 2;
+    const left = bounds.left + inset;
+    const right = bounds.right - inset;
+    const top = bounds.top + inset;
+    const bottom = bounds.bottom - inset;
+    const cornerRadius = Math.min(radius, (right - left) / 2, (bottom - top) / 2);
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', [
+      `M ${left + cornerRadius} ${top}`,
+      `H ${right - cornerRadius}`,
+      `Q ${right} ${top} ${right} ${top + cornerRadius}`,
+      `V ${bottom - cornerRadius}`,
+      `Q ${right} ${bottom} ${right - cornerRadius} ${bottom}`,
+      `H ${left + cornerRadius}`,
+      `Q ${left} ${bottom} ${left} ${bottom - cornerRadius}`,
+      `V ${top + cornerRadius}`,
+      `Q ${left} ${top} ${left + cornerRadius} ${top}`,
+      'Z'
+    ].join(' '));
+    path.classList.add('construction-frame-line');
+    frame.append(path);
+
+    const length = 2 * ((right - left) + (bottom - top) - 4 * cornerRadius) + 2 * Math.PI * cornerRadius;
+    path.style.strokeDasharray = `${length} ${length}`;
+    path.style.strokeDashoffset = String(length);
+    path.style.opacity = '0';
+    path.animate(
+      [
+        { strokeDashoffset: length, opacity: 0.2 },
+        { strokeDashoffset: 0, opacity: 1 }
+      ],
+      { duration: 1450, delay: 450, easing: 'ease-out', fill: 'forwards' }
+    );
+
+    overlay.append(frame);
+  };
+
+  const construct = (target) => {
+    const bounds = target.getBoundingClientRect();
+    if (bounds.width < 2 || bounds.height < 2) {
+      target.classList.remove('drone-construct-pending');
+      states.set(target, 'done');
+      drainQueue();
+      return;
+    }
+
+    const viewportWidth = document.documentElement.clientWidth;
+    const viewportHeight = window.innerHeight;
+    const borderRadius = Number.parseFloat(getComputedStyle(target).borderTopLeftRadius) || 0;
+    const overlay = document.createElement('div');
+    overlay.className = 'drone-flight-overlay';
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.style.setProperty('--target-left', `${bounds.left}px`);
+    overlay.style.setProperty('--target-top', `${bounds.top}px`);
+    overlay.style.setProperty('--target-width', `${bounds.width}px`);
+    overlay.style.setProperty('--target-height', `${bounds.height}px`);
+
+    const mask = document.createElement('div');
+    mask.className = 'construction-mask';
+    mask.style.borderRadius = `${borderRadius}px`;
+    const panels = ['top-left', 'top-right', 'bottom-left', 'bottom-right'].map((corner) => {
+      const panel = document.createElement('div');
+      panel.className = `construction-panel construction-panel-${corner}`;
+      panel.setAttribute('aria-hidden', 'true');
+      mask.append(panel);
+      return panel;
+    });
+    overlay.append(mask);
+    addConstructionFrame(overlay, bounds, viewportWidth, viewportHeight, borderRadius);
+
+    const drones = Array.from({ length: 6 }, (_, index) => {
+      const side = index % 2 === 0 ? 'left' : 'right';
+      const targetX = bounds.left + bounds.width * (0.12 + Math.random() * 0.76);
+      const targetY = bounds.top + bounds.height * (0.12 + Math.random() * 0.76);
+      const startY = Math.max(12, Math.min(viewportHeight - 12, targetY + (Math.random() - 0.5) * 180));
+      return [
+        {
+          side,
+          start: { x: side === 'left' ? -40 : viewportWidth + 40, y: startY },
+          destination: {
+            x: Math.max(12, Math.min(viewportWidth - 12, targetX)),
+            y: Math.max(12, Math.min(viewportHeight - 12, targetY))
+          }
+        }
+      ];
+    }).flat();
+
+    target.classList.remove('drone-construct-pending');
+    target.classList.add('drone-constructing');
+    document.body.append(overlay);
+
+    const animations = [
+      mask.animate(
+        [
+          { opacity: 1, offset: 0 },
+          { opacity: 1, offset: 0.68 },
+          { opacity: 0, offset: 0.92 },
+          { opacity: 0, offset: 1 }
+        ],
+        { duration: 2650, easing: 'ease-in-out', fill: 'forwards' }
+      ),
+      ...panels.map((panel, index) => panel.animate(
+        [
+          { transform: 'scale(0.02)', opacity: 0.45 },
+          { transform: 'scale(1.04)', opacity: 1, offset: 0.82 },
+          { transform: 'scale(1)', opacity: 1 }
+        ],
+        {
+          duration: 1650,
+          delay: 520 + index * 35,
+          easing: 'cubic-bezier(.16,.76,.22,1)',
+          fill: 'forwards'
+        }
+      )),
+      ...drones.map((drone, index) => createDrone(overlay, drone.start, drone.destination, drone.side, index))
+    ];
+
+    const construction = { overlay, animations, startScrollY: window.scrollY, revealTimer: null };
+    active.set(target, construction);
+    construction.revealTimer = window.setTimeout(() => {
+      if (active.get(target) !== construction) return;
+      target.classList.remove('drone-constructing');
+      target.classList.add('drone-construct-reveal');
+    }, 1830);
+    Promise.all(animations.map((animation) => animation.finished.catch(() => undefined)))
+      .then(() => completeConstruction(target, construction));
+  };
+
+  function drainQueue() {
+    if (prefersReducedMotion.matches || active.size >= maxConcurrent) return;
+
+    while (queue.length) {
+      const target = queue.shift();
+      if (states.get(target) !== 'queued') continue;
+      const rect = target.getBoundingClientRect();
+      if (rect.bottom < -window.innerHeight * 0.1 || rect.top > window.innerHeight * 1.1) {
+        target.classList.remove('drone-construct-pending');
+        states.set(target, 'observed');
+        observer.unobserve(target);
+        observer.observe(target);
+        continue;
+      }
+
+      states.set(target, 'running');
+      construct(target);
+      if (active.size >= maxConcurrent) return;
+    }
+  }
+
+  const queueTarget = (target) => {
+    if (states.get(target) !== 'observed') return;
+    states.set(target, 'queued');
+    target.classList.add('drone-construct-pending');
+    queue.push(target);
+    drainQueue();
+  };
+
+  const isFullyInViewport = (target) => {
+    const bounds = target.getBoundingClientRect();
+    const fullyInsideHorizontally = bounds.left >= 0 && bounds.right <= document.documentElement.clientWidth;
+    if (!fullyInsideHorizontally) return false;
+
+    if (bounds.height <= window.innerHeight) {
+      return bounds.top >= 0 && bounds.bottom <= window.innerHeight;
+    }
+
+    return bounds.top <= 0 && bounds.bottom >= window.innerHeight;
+  };
+  const shouldStartConstruction = (entry) => entry.isIntersecting && isFullyInViewport(entry.target);
+  const constructionThresholds = Array.from({ length: 20 }, (_, index) => (index + 1) / 20);
+
+  const observeTargets = (root = document) => {
+    root.querySelectorAll?.(targetsSelector).forEach((target) => {
+      if (states.has(target)) return;
+      states.set(target, 'observed');
+      if (!prefersReducedMotion.matches) target.classList.add('drone-construct-pending');
+      observer.observe(target);
+    });
+    if (root.matches?.(targetsSelector) && !states.has(root)) {
+      states.set(root, 'observed');
+      if (!prefersReducedMotion.matches) root.classList.add('drone-construct-pending');
+      observer.observe(root);
+    }
+  };
+
+  const revealWithoutAnimation = () => {
+    observer.disconnect();
+    mutationObserver.disconnect();
+    viewportListeners?.abort();
+    queue.length = 0;
+    active.forEach((construction, target) => clearTarget(target));
+    states.forEach((state, target) => {
+      target.classList.remove('drone-construct-pending', 'drone-constructing', 'drone-construct-reveal');
+      states.set(target, 'done');
+    });
+  };
+
+  observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (shouldStartConstruction(entry)) queueTarget(entry.target);
+    });
+  }, { threshold: constructionThresholds });
+
+  mutationObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node instanceof Element) observeTargets(node);
+      });
+    });
+  });
+  mutationObserver.observe(document.querySelector('main'), { childList: true, subtree: true });
+
+  const bindViewportListeners = () => {
+    viewportListeners = new AbortController();
+    window.addEventListener('scroll', () => {
+      states.forEach((state, target) => {
+        if (state === 'observed' && isFullyInViewport(target)) queueTarget(target);
+      });
+      active.forEach((construction, target) => {
+        const bounds = target.getBoundingClientRect();
+        if (bounds.bottom <= 0 || bounds.top >= window.innerHeight) {
+          completeConstruction(target, construction);
+          return;
+        }
+
+        construction.overlay.style.transform = `translate3d(0, ${construction.startScrollY - window.scrollY}px, 0)`;
+      });
+    }, { passive: true, signal: viewportListeners.signal });
+
+    window.addEventListener('resize', () => {
+      active.forEach((construction, target) => completeConstruction(target, construction));
+    }, { passive: true, signal: viewportListeners.signal });
+  };
+  bindViewportListeners();
+
+  if (prefersReducedMotion.matches) {
+    observeTargets();
+    revealWithoutAnimation();
+  } else {
+    observeTargets();
+  }
+
+  prefersReducedMotion.addEventListener('change', () => {
+    if (prefersReducedMotion.matches) {
+      revealWithoutAnimation();
+      return;
+    }
+
+    observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (shouldStartConstruction(entry)) queueTarget(entry.target);
+      });
+    }, { threshold: constructionThresholds });
+    mutationObserver.observe(document.querySelector('main'), { childList: true, subtree: true });
+    states.forEach((state, target) => {
+      if (state !== 'done') {
+        states.set(target, 'observed');
+        target.classList.add('drone-construct-pending');
+        observer.observe(target);
+      }
+    });
+    bindViewportListeners();
+    observeTargets();
+  });
 }
 
 function bindNavLinks() {

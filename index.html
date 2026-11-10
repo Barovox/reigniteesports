@@ -54,7 +54,15 @@
           <img src="asset/image/officiallogo.png" alt="RN official logo" class="brand-logo" />
         </a>
 
-        <button id="languageToggle" class="language-toggle" type="button" aria-label="Switch to Vietnamese">Tiếng Việt</button>
+        <div class="header-presence-group">
+          <button id="languageToggle" class="language-toggle" type="button" aria-label="Switch to Vietnamese">Tiếng Việt</button>
+          <div class="header-presence" aria-live="polite">
+            <span class="header-presence-indicator" aria-hidden="true"></span>
+            <strong id="onlineVisitorCount">—</strong>
+            <span data-i18n="header.online">ONLINE</span>
+            <small id="onlineVisitorStatus" data-i18n="admin.onlineUnavailable" role="status" hidden></small>
+          </div>
+        </div>
         <button class="nav-toggle" type="button" aria-label="Toggle menu" aria-expanded="false">
           <span></span><span></span><span></span>
         </button>
